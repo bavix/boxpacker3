@@ -1,83 +1,83 @@
 package boxpacker3
 
 type Box struct {
-	ID        string
-	Width     float64
-	Height    float64
-	Depth     float64
-	MaxWeight float64
-	Volume    float64
-	Items     []*Item
-
+	id          string
+	width       float64
+	height      float64
+	depth       float64
+	maxWeight   float64
+	volume      float64
+	items       []*Item
 	itemsVolume float64
 	itemsWeight float64
 }
 
-type BoxSlice []*Box
+type boxSlice []*Box
 
-func (bs BoxSlice) Len() int {
+func (bs boxSlice) Len() int {
 	return len(bs)
 }
 
-func (bs BoxSlice) Less(i, j int) bool {
+func (bs boxSlice) Less(i, j int) bool {
 	return bs[i].GetVolume() < bs[j].GetVolume()
 }
 
-func (bs BoxSlice) Swap(i, j int) {
+func (bs boxSlice) Swap(i, j int) {
 	bs[i], bs[j] = bs[j], bs[i]
 }
 
 func NewBox(id string, w, h, d, mw float64) *Box {
+	//nolint:exhaustruct
 	return &Box{
-		ID:        id,
-		Width:     w,
-		Height:    h,
-		Depth:     d,
-		MaxWeight: mw,
-		Volume:    w * h * d,
-		Items:     make([]*Item, 0),
+		id:        id,
+		width:     w,
+		height:    h,
+		depth:     d,
+		maxWeight: mw,
+		volume:    w * h * d,
+		items:     nil,
 	}
 }
 
 func (b *Box) GetID() string {
-	return b.ID
+	return b.id
 }
 
 func (b *Box) GetWidth() float64 {
-	return b.Width
+	return b.width
 }
 
 func (b *Box) GetHeight() float64 {
-	return b.Height
+	return b.height
 }
 
 func (b *Box) GetDepth() float64 {
-	return b.Depth
+	return b.depth
 }
 
 func (b *Box) GetVolume() float64 {
-	return b.Volume
+	return b.volume
 }
 
 func (b *Box) GetMaxWeight() float64 {
-	return b.MaxWeight
+	return b.maxWeight
 }
 
-// PutItem Пытается поместить элемент в опорную точку p коробки b.
+func (b *Box) GetItems() []*Item {
+	return b.items
+}
+
+// PutItem Attempts to place an element at anchor point p of box b.
 func (b *Box) PutItem(item *Item, p Pivot) bool {
+	if !b.canTryToPlace(item) {
+		return false
+	}
+
 	fit := false
+	item.position = p
 
-	if b.itemsVolume+item.GetVolume() > b.GetVolume() {
-		return false
-	}
-
-	if b.itemsWeight+item.GetWeight() > b.GetMaxWeight() {
-		return false
-	}
-
-	item.Position = p
 	for rt := RotationTypeWhd; rt <= RotationTypeWdh; rt++ {
-		item.RotationType = rt
+		item.rotationType = rt
 		d := item.GetDimension()
 
 		if b.GetWidth() < p[WidthAxis]+d[WidthAxis] || b.GetHeight() < p[HeightAxis]+d[HeightAxis] || b.GetDepth() < p[DepthAxis]+d[DepthAxis] {
@@ -86,7 +86,7 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 
 		fit = true
 
-		for _, ib := range b.Items {
+		for _, ib := range b.items {
 			if ib.Intersect(item) {
 				fit = false
 
@@ -106,9 +106,26 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 	return fit
 }
 
-func (b *Box) insert(item *Item) {
-	b.Items = append(b.Items, item)
+func (b *Box) canTryToPlace(item *Item) bool {
+	if b.itemsVolume+item.GetVolume() > b.GetVolume() {
+		return false
+	}
 
+	if b.itemsWeight+item.GetWeight() > b.GetMaxWeight() {
+		return false
+	}
+
+	return true
+}
+
+func (b *Box) insert(item *Item) {
+	b.items = append(b.items, item)
 	b.itemsVolume += item.GetVolume()
 	b.itemsWeight += item.GetWeight()
+}
+
+func (b *Box) purge() {
+	b.items = []*Item{}
+	b.itemsVolume = 0
+	b.itemsWeight = 0
 }
