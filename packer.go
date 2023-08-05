@@ -2,13 +2,15 @@ package boxpacker3
 
 import (
 	"sort"
+
+	"golang.org/x/exp/slices"
 )
 
 type Packer struct{}
 
 type Result struct {
-	UnfitItems ItemSlice
-	Boxes      BoxSlice
+	UnfitItems itemSlice
+	Boxes      boxSlice
 }
 
 func NewPacker() *Packer {
@@ -16,20 +18,19 @@ func NewPacker() *Packer {
 }
 
 func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) (*Result, error) {
-	boxes := BoxSlice(copySlicePtr(inputBoxes))
-	items := ItemSlice(copySlicePtr(inputItems))
+	boxes := boxSlice(copySlicePtr(inputBoxes))
+	items := itemSlice(copySlicePtr(inputItems))
 
 	sort.Sort(boxes)
 	sort.Sort(items)
 
 	result := &Result{
-		UnfitItems: make(ItemSlice, 0, len(items)),
+		UnfitItems: make(itemSlice, 0, len(items)),
 		Boxes:      p.preferredSort(boxes, items),
 	}
 
-	maxIter := len(items)
-	for i := 0; len(items) > 0 && i < maxIter; i++ {
-		box := p.FindFittedBox(result.Boxes, items[0])
+	for i := 0; len(items) > 0; i++ {
+		box := p.findRightBox(result.Boxes, items[0])
 		if box == nil {
 			result.UnfitItems = append(result.UnfitItems, items[0])
 			items = items[1:]
@@ -43,7 +44,7 @@ func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) (*Result, error) {
 	return result, nil
 }
 
-func (p *Packer) preferredSort(boxes BoxSlice, items ItemSlice) BoxSlice {
+func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
 	volume := 0.
 	weight := 0.
 
@@ -52,48 +53,40 @@ func (p *Packer) preferredSort(boxes BoxSlice, items ItemSlice) BoxSlice {
 		weight += item.GetWeight()
 	}
 
-	preferredBoxes := make(BoxSlice, 0, len(boxes))
-	otherBoxes := make(BoxSlice, 0, len(boxes))
-
-	for _, b := range boxes {
+	for i, b := range boxes {
 		if b.GetVolume() >= volume && b.GetMaxWeight() >= weight {
-			preferredBoxes = append(preferredBoxes, b)
-		} else {
-			otherBoxes = append(otherBoxes, b)
+			boxes = append(boxSlice{b}, slices.Delete(boxes, i, i+1)...)
+
+			break
 		}
 	}
 
-	return append(preferredBoxes, otherBoxes...)
+	return boxes
 }
 
-// packToBox Упаковывает товары в коробку b. Возвращает не упакованные товары.
+// packToBox Packs goods in a box b. Returns unpackaged goods.
 //
-//nolint:cyclop,nonamedreturns,gocognit,funlen
-func (p *Packer) packToBox(boxes []*Box, b *Box, items []*Item) (unpacked []*Item) {
-	if !b.PutItem(items[0], Pivot{0, 0, 0}) {
-		if b2 := p.getBiggerBoxThan(boxes, b); b2 != nil {
-			return p.packToBox(boxes, b2, items)
-		}
+//nolint:cyclop,gocognit,funlen
+func (p *Packer) packToBox(boxes []*Box, b *Box, items []*Item) []*Item {
+	var fitted bool
 
-		return items
-	}
+	unpacked := make([]*Item, 0, len(items))
+	pv := Pivot{}
 
-	// Упаковываем неупакованные товары.
-	for _, i := range items[1:] {
-		var fitted bool
+	// Packing unpackaged goods.
+	for _, i := range items {
+		fitted = false
 
-		// Пробуем опорные точки для коробки, которые не пересекаются с существующими товарами в коробке.
+		// Trying anchor points for the box that don't intersect with existing items in the box.
 		for pt := WidthAxis; pt <= DepthAxis && !fitted; pt++ {
-			for _, ib := range b.Items {
-				var pv Pivot
-
+			for _, ib := range b.items {
 				switch pt {
 				case WidthAxis:
-					pv = Pivot{ib.Position[WidthAxis] + ib.GetWidth(), ib.Position[HeightAxis], ib.Position[DepthAxis]}
+					pv = Pivot{ib.position[WidthAxis] + ib.GetWidth(), ib.position[HeightAxis], ib.position[DepthAxis]}
 				case HeightAxis:
-					pv = Pivot{ib.Position[WidthAxis], ib.Position[HeightAxis] + ib.GetHeight(), ib.Position[DepthAxis]}
+					pv = Pivot{ib.position[WidthAxis], ib.position[HeightAxis] + ib.GetHeight(), ib.position[DepthAxis]}
 				case DepthAxis:
-					pv = Pivot{ib.Position[WidthAxis], ib.Position[HeightAxis], ib.Position[DepthAxis] + ib.GetDepth()}
+					pv = Pivot{ib.position[WidthAxis], ib.position[HeightAxis], ib.position[DepthAxis] + ib.GetDepth()}
 				}
 
 				if b.PutItem(i, pv) {
@@ -104,42 +97,31 @@ func (p *Packer) packToBox(boxes []*Box, b *Box, items []*Item) (unpacked []*Ite
 			}
 		}
 
-		//nolint:nestif
 		if !fitted {
-			forRevert := copySlicePtr(b.Items)
-			itemSlice := copySlicePtr(b.Items)
-			bkitemsWeight := b.itemsWeight
-			bkitemsVolume := b.itemsVolume
-			b.Items = []*Item{}
-			b.itemsWeight = 0
-			b.itemsVolume = 0
+			backup := copyPtr(b)
+			copyItems := copySlicePtr(b.items)
 
-			if b.PutItem(i, Pivot{0, 0, 0}) {
-				cnt := len(itemSlice)
-				for k := 0; k < 100 && cnt > 0; k++ {
-					j := itemSlice[0]
+			b.purge()
 
-					// Пробуем опорные точки для коробки, которые не пересекаются с существующими товарами в коробке.
-					for pt := WidthAxis; pt <= DepthAxis && cnt > 0; pt++ {
-						for _, ib := range b.Items {
-							if j == ib {
-								continue
-							}
+			if b.PutItem(i, Pivot{}) {
+				total := len(copyItems)
+				iter := 0
 
-							var pv Pivot
-
+				for k := 0; k < total && iter < total; k++ {
+					// Trying anchor points for the box that don't intersect with existing items in the box.
+					for pt := WidthAxis; pt <= DepthAxis && iter < total; pt++ {
+						for _, ib := range b.items {
 							switch pt {
 							case WidthAxis:
-								pv = Pivot{ib.Position[WidthAxis] + ib.GetWidth(), ib.Position[HeightAxis], ib.Position[DepthAxis]}
+								pv = Pivot{ib.position[WidthAxis] + ib.GetWidth(), ib.position[HeightAxis], ib.position[DepthAxis]}
 							case HeightAxis:
-								pv = Pivot{ib.Position[WidthAxis], ib.Position[HeightAxis] + ib.GetHeight(), ib.Position[DepthAxis]}
+								pv = Pivot{ib.position[WidthAxis], ib.position[HeightAxis] + ib.GetHeight(), ib.position[DepthAxis]}
 							case DepthAxis:
-								pv = Pivot{ib.Position[WidthAxis], ib.Position[HeightAxis], ib.Position[DepthAxis] + ib.GetDepth()}
+								pv = Pivot{ib.position[WidthAxis], ib.position[HeightAxis], ib.position[DepthAxis] + ib.GetDepth()}
 							}
 
-							if b.PutItem(j, pv) {
-								itemSlice = itemSlice[1:]
-								cnt--
+							if b.PutItem(copyItems[k], pv) {
+								iter++
 
 								break
 							}
@@ -147,61 +129,41 @@ func (p *Packer) packToBox(boxes []*Box, b *Box, items []*Item) (unpacked []*Ite
 					}
 				}
 
-				fitted = len(itemSlice) == 0
-
-				if !fitted {
-					b.Items = forRevert
-					b.itemsVolume = bkitemsVolume
-					b.itemsWeight = bkitemsWeight
-				}
-			} else {
-				b.Items = forRevert
-				b.itemsVolume = bkitemsVolume
-				b.itemsWeight = bkitemsWeight
-			}
-
-			for b2 := p.getBiggerBoxThan(boxes, b); b2 != nil && !fitted; b2 = p.getBiggerBoxThan(boxes, b) {
-				if left := p.packToBox(boxes, b2, append(b2.Items, i)); len(left) == 0 {
-					b = b2
-					fitted = true
-				}
+				fitted = iter == total
 			}
 
 			if !fitted {
-				unpacked = append(unpacked, i)
+				*b = *backup
 			}
+		}
+
+		for lb := p.findBiggerBox(boxes, b); lb != nil && !fitted; lb = p.findBiggerBox(boxes, lb) {
+			fitted = len(p.packToBox(boxes, lb, itemSlice{i})) == 0
+		}
+
+		if !fitted {
+			unpacked = append(unpacked, i)
 		}
 	}
 
-	return //nolint:nakedret
+	return unpacked
 }
 
-func (p *Packer) getBiggerBoxThan(boxes []*Box, b *Box) *Box {
-	v := b.GetVolume()
-	for _, b2 := range boxes {
-		if b2.GetVolume() > v {
-			return b2
+func (p *Packer) findBiggerBox(boxes []*Box, box *Box) *Box {
+	for _, b := range boxes {
+		if b.volume > box.volume {
+			return b
 		}
 	}
 
 	return nil
 }
 
-// FindFittedBox находит коробку для товара.
-func (p *Packer) FindFittedBox(boxes []*Box, i *Item) *Box {
+func (p *Packer) findRightBox(boxes []*Box, item *Item) *Box {
 	for _, b := range boxes {
-		if !b.PutItem(i, Pivot{0, 0, 0}) {
-			continue
+		if b.volume >= item.volume {
+			return b
 		}
-
-		if len(b.Items) == 1 && b.Items[0] == i {
-			b.itemsVolume -= i.GetVolume()
-			b.itemsWeight -= i.GetWeight()
-
-			b.Items = []*Item{}
-		}
-
-		return b
 	}
 
 	return nil

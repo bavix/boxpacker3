@@ -5,69 +5,69 @@ import (
 )
 
 type Item struct {
-	ID     string
-	Width  float64
-	Height float64
-	Depth  float64
-	Weight float64
-	Volume float64
-
-	RotationType RotationType
-	Position     Pivot
+	id           string
+	width        float64
+	height       float64
+	depth        float64
+	weight       float64
+	volume       float64
+	rotationType RotationType
+	position     Pivot
 }
 
-type ItemSlice []*Item
+type itemSlice []*Item
 
-func (is ItemSlice) Len() int {
-	return len(is)
+func (it itemSlice) Len() int {
+	return len(it)
 }
 
-func (is ItemSlice) Less(i, j int) bool {
-	return is[i].GetVolume() < is[j].GetVolume()
+func (it itemSlice) Less(i, j int) bool {
+	return it[i].GetVolume() < it[j].GetVolume()
 }
 
-func (is ItemSlice) Swap(i, j int) {
-	is[i], is[j] = is[j], is[i]
+func (it itemSlice) Swap(i, j int) {
+	it[i], it[j] = it[j], it[i]
 }
 
 func NewItem(id string, w, h, d, wg float64) *Item {
+	//nolint:exhaustruct
 	return &Item{
-		ID:     id,
-		Width:  w,
-		Height: h,
-		Depth:  d,
-		Weight: wg,
-		Volume: w * h * d,
+		id:     id,
+		width:  w,
+		height: h,
+		depth:  d,
+		weight: wg,
+		volume: w * h * d,
 	}
 }
 
 func (i *Item) GetID() string {
-	return i.ID
+	return i.id
 }
 
 func (i *Item) GetWidth() float64 {
-	return i.Width
+	return i.width
 }
 
 func (i *Item) GetHeight() float64 {
-	return i.Height
+	return i.height
 }
 
 func (i *Item) GetDepth() float64 {
-	return i.Depth
+	return i.depth
 }
 
 func (i *Item) GetVolume() float64 {
-	return i.Volume
+	return i.volume
 }
 
 func (i *Item) GetWeight() float64 {
-	return i.Weight
+	return i.weight
 }
 
 //nolint:nonamedreturns
 func (i *Item) GetDimension() (d Dimension) {
-	switch i.RotationType {
+	switch i.rotationType {
 	case RotationTypeWhd:
 		d = Dimension{i.GetWidth(), i.GetHeight(), i.GetDepth()}
 	case RotationTypeHwd:
@@ -85,7 +85,7 @@ func (i *Item) GetDimension() (d Dimension) {
 	return
 }
 
-// Intersect Проверяет пересечения между элементом i и элементом it.
+// Intersect Tests for intersections between the i element and the it element.
 func (i *Item) Intersect(it *Item) bool {
 	d1 := i.GetDimension()
 	d2 := it.GetDimension()
@@ -95,12 +95,12 @@ func (i *Item) Intersect(it *Item) bool {
 		rectIntersect(d1, d2, i, it, WidthAxis, DepthAxis)
 }
 
-// rectIntersect Проверяет пересекаются ли два прямоугольника от осей x и y элементов i1 и i2.
+// rectIntersect Checks if two rectangles intersect from the x and y axes of elements i1 and i2.
 func rectIntersect(d1, d2 Dimension, i1, i2 *Item, x, y Axis) bool {
-	cx1 := i1.Position[x] + d1[x]/2 //nolint:gomnd
-	cy1 := i1.Position[y] + d1[y]/2 //nolint:gomnd
-	cx2 := i2.Position[x] + d2[x]/2 //nolint:gomnd
-	cy2 := i2.Position[y] + d2[y]/2 //nolint:gomnd
+	cx1 := i1.position[x] + d1[x]/2 //nolint:gomnd
+	cy1 := i1.position[y] + d1[y]/2 //nolint:gomnd
+	cx2 := i2.position[x] + d2[x]/2 //nolint:gomnd
+	cy2 := i2.position[y] + d2[y]/2 //nolint:gomnd
 
 	ix := math.Max(cx1, cx2) - math.Min(cx1, cx2)
 	iy := math.Max(cy1, cy2) - math.Min(cy1, cy2)

@@ -1,7 +1,7 @@
 package boxpacker3_test
 
 import (
-	rand2 "crypto/rand"
+	"crypto/rand"
 	"math/big"
 	"testing"
 
@@ -11,13 +11,13 @@ import (
 )
 
 func BenchmarkPacker(b *testing.B) {
-	items := make(boxpacker3.ItemSlice, 0, 100)
+	items := make([]*boxpacker3.Item, 0, 100)
 
 	for x := 0; x < 100; x++ {
-		w, _ := rand2.Int(rand2.Reader, big.NewInt(150))
-		l, _ := rand2.Int(rand2.Reader, big.NewInt(150))
-		h, _ := rand2.Int(rand2.Reader, big.NewInt(150))
-		w2, _ := rand2.Int(rand2.Reader, big.NewInt(100))
+		w, _ := rand.Int(rand.Reader, big.NewInt(150))
+		l, _ := rand.Int(rand.Reader, big.NewInt(150))
+		h, _ := rand.Int(rand.Reader, big.NewInt(150))
+		w2, _ := rand.Int(rand.Reader, big.NewInt(100))
 
 		items = append(items, boxpacker3.NewItem(
 			uuid.New().String(),
