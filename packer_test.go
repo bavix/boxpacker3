@@ -92,8 +92,7 @@ func (s *PackerSuit) TestMinBox() {
 		5,
 		384)
 
-	packResult, err := packer.Pack(boxes, []*boxpacker3.Item{item})
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, []*boxpacker3.Item{item})
 	require.NotNil(t, packResult)
 
 	checks := map[string]int{
@@ -122,8 +121,7 @@ func (s *PackerSuit) TestRotate() {
 		boxpacker3.NewItem(uuid.New().String(), 100, 380, 250, 2690),
 	}
 
-	packResult, err := packer.Pack(boxes, items)
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
 	checks := map[string]int{
@@ -152,8 +150,7 @@ func (s *PackerSuit) TestStd() {
 		boxpacker3.NewItem(uuid.New().String(), 100, 380, 250, 2690),
 	}
 
-	packResult, err := packer.Pack(boxes, items)
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
 	checks := map[string]int{
@@ -188,8 +185,7 @@ func (s *PackerSuit) TestBoxTypeF() {
 		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2500),
 	}
 
-	packResult, err := packer.Pack(boxes, items)
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
 	checks := map[string]int{
@@ -224,8 +220,7 @@ func (s *PackerSuit) TestBoxTypeF_Weight() {
 		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2690), // maxWeight > 20_000
 	}
 
-	packResult, err := packer.Pack(boxes, items)
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
 	checks := map[string]int{
@@ -270,8 +265,7 @@ func (s *PackerSuit) TestPacker_AllBoxes() {
 		boxpacker3.NewItem(uuid.New().String(), 1000, 500, 500, 20000),
 	}
 
-	packResult, err := packer.Pack(reverse, items)
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
 	require.Len(t, packResult.UnfitItems, 0)
@@ -295,8 +289,7 @@ func (s *PackerSuit) TestPacker_UnfitItems() {
 		boxpacker3.NewItem(uuid.New().String(), 3000, 3000, 3000, 20001),
 	}
 
-	packResult, err := packer.Pack(boxes, items)
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
 	require.Len(t, packResult.UnfitItems, 4)
@@ -341,8 +334,7 @@ func (s *PackerSuit) TestPacker_MinAndStd() {
 		boxpacker3.NewItem(uuid.New().String(), 3000, 3000, 3000, 20000), // 14. NotStd6
 	}
 
-	packResult, err := packer.Pack(reverse, items)
-	require.NoError(t, err)
+	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
 	checks := map[string]int{

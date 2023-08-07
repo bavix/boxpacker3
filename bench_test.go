@@ -34,6 +34,6 @@ func BenchmarkPacker(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, _ = packer.Pack(boxes, items)
+		_ = packer.Pack(boxes, items)
 	}
 }

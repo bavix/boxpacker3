@@ -80,7 +80,7 @@ func main() {
 		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2690),
 	}
 
-	packResult, _ := packer.Pack(boxes, items)
+	packResult := packer.Pack(boxes, items)
 
 	for _, box := range packResult.Boxes {
 		if len(box.GetItems()) == 0 {
