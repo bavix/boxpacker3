@@ -1,4 +1,3 @@
-//nolint:dupl
 package boxpacker3_test
 
 import (
@@ -52,16 +51,6 @@ const (
 	BoxTypeNotStd6 = "981ffb30-a7b9-4d9e-820e-04de2145763e"
 )
 
-type PackerSuit struct {
-	suite.Suite
-}
-
-func TestBoxPackerSuite(t *testing.T) {
-	t.Parallel()
-
-	suite.Run(t, new(PackerSuit))
-}
-
 func NewDefaultBoxList() []*boxpacker3.Box {
 	return []*boxpacker3.Box{
 		boxpacker3.NewBox(BoxTypeF, 220, 185, 50, 20000),           // 0
@@ -78,6 +67,16 @@ func NewDefaultBoxList() []*boxpacker3.Box {
 		boxpacker3.NewBox(BoxTypeNotStd5, 2500, 2500, 2500, 20000), // 11
 		boxpacker3.NewBox(BoxTypeNotStd6, 3000, 3000, 3000, 20000), // 12
 	}
+}
+
+type PackerSuit struct {
+	suite.Suite
+}
+
+func TestBoxPackerSuite(t *testing.T) {
+	t.Parallel()
+
+	suite.Run(t, new(PackerSuit))
 }
 
 func (s *PackerSuit) TestMinBox() {
@@ -168,6 +167,79 @@ func (s *PackerSuit) TestStd() {
 	}
 }
 
+func (s *PackerSuit) TestBoxTypeF() {
+	t := s.T()
+	t.Parallel()
+
+	packer := boxpacker3.NewPacker()
+	boxes := NewDefaultBoxList()
+
+	items := []*boxpacker3.Item{
+		// 5
+		boxpacker3.NewItem(uuid.New().String(), 100, 100, 5, 2500),
+		boxpacker3.NewItem(uuid.New().String(), 100, 5, 100, 2500),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2500),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2500),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2500),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2500),
+
+		// 35
+		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2500),
+		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2500),
+	}
+
+	packResult, err := packer.Pack(boxes, items)
+	require.NoError(t, err)
+	require.NotNil(t, packResult)
+
+	checks := map[string]int{
+		BoxTypeF: 8,
+	}
+
+	require.Len(t, packResult.UnfitItems, 0)
+
+	for i := 0; i < len(packResult.Boxes); i++ {
+		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()], packResult.Boxes[i].GetID())
+	}
+}
+
+func (s *PackerSuit) TestBoxTypeF_Weight() {
+	t := s.T()
+	t.Parallel()
+
+	packer := boxpacker3.NewPacker()
+	boxes := NewDefaultBoxList()
+
+	items := []*boxpacker3.Item{
+		// 5
+		boxpacker3.NewItem(uuid.New().String(), 100, 100, 5, 2690),
+		boxpacker3.NewItem(uuid.New().String(), 100, 5, 100, 2690),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2690),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2690),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2690),
+		boxpacker3.NewItem(uuid.New().String(), 5, 100, 100, 2690),
+
+		// 35
+		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2690),
+		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2690), // maxWeight > 20_000
+	}
+
+	packResult, err := packer.Pack(boxes, items)
+	require.NoError(t, err)
+	require.NotNil(t, packResult)
+
+	checks := map[string]int{
+		BoxTypeF: 7,
+		BoxTypeE: 1,
+	}
+
+	require.Len(t, packResult.UnfitItems, 0)
+
+	for i := 0; i < len(packResult.Boxes); i++ {
+		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()], packResult.Boxes[i].GetID())
+	}
+}
+
 func (s *PackerSuit) TestPacker_AllBoxes() {
 	t := s.T()
 	t.Parallel()
@@ -205,7 +277,32 @@ func (s *PackerSuit) TestPacker_AllBoxes() {
 	require.Len(t, packResult.UnfitItems, 0)
 
 	for i := 0; i < len(packResult.Boxes); i++ {
-		require.Len(t, packResult.Boxes[i].GetItems(), 1, packResult.Boxes[i].GetID())
+		require.Len(t, packResult.Boxes[i].GetItems(), 1)
+	}
+}
+
+func (s *PackerSuit) TestPacker_UnfitItems() {
+	t := s.T()
+	t.Parallel()
+
+	packer := boxpacker3.NewPacker()
+	boxes := NewDefaultBoxList()
+
+	items := []*boxpacker3.Item{
+		boxpacker3.NewItem(uuid.New().String(), 3001, 3000, 3000, 20000),
+		boxpacker3.NewItem(uuid.New().String(), 3000, 3001, 3000, 20000),
+		boxpacker3.NewItem(uuid.New().String(), 3000, 3000, 3001, 20000),
+		boxpacker3.NewItem(uuid.New().String(), 3000, 3000, 3000, 20001),
+	}
+
+	packResult, err := packer.Pack(boxes, items)
+	require.NoError(t, err)
+	require.NotNil(t, packResult)
+
+	require.Len(t, packResult.UnfitItems, 4)
+
+	for i := 0; i < len(packResult.Boxes); i++ {
+		require.Len(t, packResult.Boxes[i].GetItems(), 0, packResult.Boxes[i].GetID())
 	}
 }
 
