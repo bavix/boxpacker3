@@ -80,7 +80,6 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 		return false
 	}
 
-	fit := false
 	item.position = p
 
 	for rt := RotationTypeWhd; rt <= RotationTypeWdh; rt++ {
@@ -91,19 +90,15 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 			continue
 		}
 
-		fit = true
-
 		for _, ib := range b.items {
 			if ib.Intersect(item) {
 				return false
 			}
 		}
 
-		if fit {
-			b.insert(item)
+		b.insert(item)
 
-			return true
-		}
+		return true
 	}
 
 	return false
