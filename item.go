@@ -1,8 +1,9 @@
 package boxpacker3
 
 import (
-	"golang.org/x/exp/slices"
 	"math"
+
+	"golang.org/x/exp/slices"
 )
 
 type Item struct {
