@@ -8,6 +8,7 @@ func copyPtr[T any](original *T) *T {
 
 func copySlicePtr[T any](data []*T) []*T {
 	result := make([]*T, len(data))
+
 	for i := range data {
 		val := *data[i]
 		result[i] = &val

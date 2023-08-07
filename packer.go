@@ -86,6 +86,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 		// Trying anchor points for the box that don't intersect with existing items in the box.
 		for j := range b.items {
 			dimension := b.items[j].GetDimension()
+
 			for pt := WidthAxis; pt <= DepthAxis && !fitted; pt++ {
 				pv[WidthAxis] = b.items[j].position[WidthAxis]
 				pv[HeightAxis] = b.items[j].position[HeightAxis]

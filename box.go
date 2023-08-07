@@ -104,7 +104,6 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 
 			break
 		}
-
 	}
 
 	return fit
