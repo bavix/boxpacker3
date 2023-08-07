@@ -26,7 +26,7 @@ func (it itemSlice) Len() int {
 }
 
 func (it itemSlice) Less(i, j int) bool {
-	return it[i].GetVolume() < it[j].GetVolume()
+	return it[i].volume < it[j].volume
 }
 
 func (it itemSlice) Swap(i, j int) {

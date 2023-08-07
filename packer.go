@@ -59,7 +59,7 @@ func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
 
 	for i, b := range boxes {
 		if b.volume >= volume && b.maxWeight >= weight && b.maxLength >= maxLength {
-			return append(boxSlice{b}, slices.Delete(boxes, i, i)...)
+			return append(boxSlice{b}, slices.Delete(boxes, i, i+1)...)
 		}
 	}
 
@@ -94,18 +94,14 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 				switch pt {
 				case WidthAxis:
-					pv[WidthAxis] += +dimension[WidthAxis]
+					pv[WidthAxis] += dimension[WidthAxis]
 				case HeightAxis:
 					pv[HeightAxis] += dimension[HeightAxis]
 				case DepthAxis:
 					pv[DepthAxis] += dimension[DepthAxis]
 				}
 
-				if b.PutItem(i, pv) {
-					fitted = true
-
-					break
-				}
+				fitted = b.PutItem(i, pv)
 			}
 		}
 
@@ -131,7 +127,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 							switch pt {
 							case WidthAxis:
-								pv[WidthAxis] += +dimension[WidthAxis]
+								pv[WidthAxis] += dimension[WidthAxis]
 							case HeightAxis:
 								pv[HeightAxis] += dimension[HeightAxis]
 							case DepthAxis:

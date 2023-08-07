@@ -76,11 +76,10 @@ func (b *Box) GetItems() []*Item {
 
 // PutItem Attempts to place an element at anchor point p of box b.
 func (b *Box) PutItem(item *Item, p Pivot) bool {
-	if !b.canTryToPlace(item) {
+	if !b.canQuota(item) {
 		return false
 	}
 
-	fit := false
 	item.position = p
 
 	for rt := RotationTypeWhd; rt <= RotationTypeWdh; rt++ {
@@ -91,34 +90,22 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 			continue
 		}
 
-		fit = true
-
 		for _, ib := range b.items {
 			if ib.Intersect(item) {
 				return false
 			}
 		}
 
-		if fit {
-			b.insert(item)
+		b.insert(item)
 
-			break
-		}
+		return true
 	}
 
-	return fit
+	return false
 }
 
-func (b *Box) canTryToPlace(item *Item) bool {
-	if b.itemsVolume+item.volume > b.volume {
-		return false
-	}
-
-	if b.itemsWeight+item.weight > b.maxWeight {
-		return false
-	}
-
-	return true
+func (b *Box) canQuota(item *Item) bool {
+	return b.itemsVolume+item.volume <= b.volume && b.itemsWeight+item.weight <= b.maxWeight
 }
 
 func (b *Box) insert(item *Item) {
@@ -128,7 +115,7 @@ func (b *Box) insert(item *Item) {
 }
 
 func (b *Box) purge() {
-	b.items = b.items[:0] // keep allocated memory
+	b.items = make([]*Item, 0, len(b.items))
 	b.itemsVolume = 0
 	b.itemsWeight = 0
 }
