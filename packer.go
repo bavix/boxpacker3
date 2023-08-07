@@ -117,7 +117,6 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 				for k := 0; k < total && itemsFit < total; k++ {
 					// Trying anchor points for the box that don't intersect with existing items in the box.
-				itemFit:
 					for j := len(b.items) - 1; j >= 0; j-- {
 						dimension := b.items[j].GetDimension()
 
@@ -138,7 +137,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 							if b.PutItem(copyItems[k], pv) {
 								itemsFit++
 
-								break itemFit
+								break
 							}
 						}
 					}
