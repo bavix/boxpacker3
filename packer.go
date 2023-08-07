@@ -59,7 +59,7 @@ func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
 
 	for i, b := range boxes {
 		if b.volume >= volume && b.maxWeight >= weight && b.maxLength >= maxLength {
-			return append(boxSlice{b}, slices.Delete(boxes, i, i)...)
+			return append(boxSlice{b}, slices.Delete(boxes, i, i+1)...)
 		}
 	}
 
@@ -94,18 +94,14 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 				switch pt {
 				case WidthAxis:
-					pv[WidthAxis] += +dimension[WidthAxis]
+					pv[WidthAxis] += dimension[WidthAxis]
 				case HeightAxis:
 					pv[HeightAxis] += dimension[HeightAxis]
 				case DepthAxis:
 					pv[DepthAxis] += dimension[DepthAxis]
 				}
 
-				if b.PutItem(i, pv) {
-					fitted = true
-
-					break
-				}
+				fitted = b.PutItem(i, pv)
 			}
 		}
 
@@ -121,6 +117,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 				for k := 0; k < total && itemsFit < total; k++ {
 					// Trying anchor points for the box that don't intersect with existing items in the box.
+				itemFit:
 					for j := len(b.items) - 1; j >= 0; j-- {
 						dimension := b.items[j].GetDimension()
 
@@ -131,7 +128,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 							switch pt {
 							case WidthAxis:
-								pv[WidthAxis] += +dimension[WidthAxis]
+								pv[WidthAxis] += dimension[WidthAxis]
 							case HeightAxis:
 								pv[HeightAxis] += dimension[HeightAxis]
 							case DepthAxis:
@@ -141,7 +138,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 							if b.PutItem(copyItems[k], pv) {
 								itemsFit++
 
-								break
+								break itemFit
 							}
 						}
 					}
