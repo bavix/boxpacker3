@@ -1,6 +1,7 @@
 package boxpacker3
 
 import (
+	"golang.org/x/exp/slices"
 	"math"
 )
 
@@ -11,6 +12,7 @@ type Item struct {
 	depth        float64
 	weight       float64
 	volume       float64
+	maxLength    float64
 	rotationType RotationType
 	position     Pivot
 }
@@ -32,12 +34,13 @@ func (it itemSlice) Swap(i, j int) {
 func NewItem(id string, w, h, d, wg float64) *Item {
 	//nolint:exhaustruct
 	return &Item{
-		id:     id,
-		width:  w,
-		height: h,
-		depth:  d,
-		weight: wg,
-		volume: w * h * d,
+		id:        id,
+		width:     w,
+		height:    h,
+		depth:     d,
+		weight:    wg,
+		volume:    w * h * d,
+		maxLength: slices.Max([]float64{w, h, d}),
 	}
 }
 
