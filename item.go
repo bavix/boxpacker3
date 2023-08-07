@@ -6,12 +6,13 @@ import (
 )
 
 type Item struct {
-	id           string
-	width        float64
-	height       float64
-	depth        float64
-	weight       float64
-	volume       float64
+	id     string
+	width  float64
+	height float64
+	depth  float64
+	weight float64
+	volume float64
+
 	maxLength    float64
 	rotationType RotationType
 	position     Pivot
@@ -72,24 +73,23 @@ func (i *Item) GetPosition() Pivot {
 	return i.position
 }
 
-//nolint:nonamedreturns
-func (i *Item) GetDimension() (d Dimension) {
+func (i *Item) GetDimension() Dimension {
 	switch i.rotationType {
 	case RotationTypeWhd:
-		d = Dimension{i.GetWidth(), i.GetHeight(), i.GetDepth()}
+		return Dimension{i.GetWidth(), i.GetHeight(), i.GetDepth()}
 	case RotationTypeHwd:
-		d = Dimension{i.GetHeight(), i.GetWidth(), i.GetDepth()}
+		return Dimension{i.GetHeight(), i.GetWidth(), i.GetDepth()}
 	case RotationTypeHdw:
-		d = Dimension{i.GetHeight(), i.GetDepth(), i.GetWidth()}
+		return Dimension{i.GetHeight(), i.GetDepth(), i.GetWidth()}
 	case RotationTypeDhw:
-		d = Dimension{i.GetDepth(), i.GetHeight(), i.GetWidth()}
+		return Dimension{i.GetDepth(), i.GetHeight(), i.GetWidth()}
 	case RotationTypeDwh:
-		d = Dimension{i.GetDepth(), i.GetWidth(), i.GetHeight()}
+		return Dimension{i.GetDepth(), i.GetWidth(), i.GetHeight()}
 	case RotationTypeWdh:
-		d = Dimension{i.GetWidth(), i.GetDepth(), i.GetHeight()}
+		return Dimension{i.GetWidth(), i.GetDepth(), i.GetHeight()}
+	default: // RotationTypeWhd
+		return Dimension{i.GetWidth(), i.GetHeight(), i.GetDepth()}
 	}
-
-	return
 }
 
 // Intersect Tests for intersections between the i element and the it element.

@@ -281,6 +281,31 @@ func (s *PackerSuit) TestPacker_AllBoxes() {
 	}
 }
 
+func (s *PackerSuit) TestPacker_UnfitItems() {
+	t := s.T()
+	t.Parallel()
+
+	packer := boxpacker3.NewPacker()
+	boxes := NewDefaultBoxList()
+
+	items := []*boxpacker3.Item{
+		boxpacker3.NewItem(uuid.New().String(), 3001, 3000, 3000, 20000),
+		boxpacker3.NewItem(uuid.New().String(), 3000, 3001, 3000, 20000),
+		boxpacker3.NewItem(uuid.New().String(), 3000, 3000, 3001, 20000),
+		boxpacker3.NewItem(uuid.New().String(), 3000, 3000, 3000, 20001),
+	}
+
+	packResult, err := packer.Pack(boxes, items)
+	require.NoError(t, err)
+	require.NotNil(t, packResult)
+
+	require.Len(t, packResult.UnfitItems, 4)
+
+	for i := 0; i < len(packResult.Boxes); i++ {
+		require.Len(t, packResult.Boxes[i].GetItems(), 0, packResult.Boxes[i].GetID())
+	}
+}
+
 func (s *PackerSuit) TestPacker_MinAndStd() {
 	t := s.T()
 	t.Parallel()

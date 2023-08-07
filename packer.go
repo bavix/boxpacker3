@@ -25,7 +25,7 @@ func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) (*Result, error) {
 	sort.Sort(items)
 
 	result := &Result{
-		UnfitItems: make(itemSlice, 0, len(items)),
+		UnfitItems: nil,
 		Boxes:      p.preferredSort(boxes, items),
 	}
 
@@ -59,9 +59,7 @@ func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
 
 	for i, b := range boxes {
 		if b.volume >= volume && b.maxWeight >= weight && b.maxLength >= maxLength {
-			boxes = append(boxSlice{b}, slices.Delete(boxes, i, len(boxes))...)
-
-			break
+			return append(boxSlice{b}, slices.Delete(boxes, i, i)...)
 		}
 	}
 
@@ -77,7 +75,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 	unpacked := make([]*Item, 0, len(items))
 	pv := Pivot{}
 
-	if b.items == nil && b.PutItem(items[0], Pivot{}) {
+	if b.items == nil && b.PutItem(items[0], pv) {
 		items = items[1:]
 	}
 

@@ -1,16 +1,19 @@
 package boxpacker3
 
-import "golang.org/x/exp/slices"
+import (
+	"golang.org/x/exp/slices"
+)
 
 type Box struct {
-	id          string
-	width       float64
-	height      float64
-	depth       float64
-	maxWeight   float64
+	id        string
+	width     float64
+	height    float64
+	depth     float64
+	maxWeight float64
+	volume    float64
+	items     []*Item
+
 	maxLength   float64
-	volume      float64
-	items       []*Item
 	itemsVolume float64
 	itemsWeight float64
 }
@@ -84,7 +87,7 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 		item.rotationType = rt
 		d := item.GetDimension()
 
-		if b.GetWidth() < p[WidthAxis]+d[WidthAxis] || b.GetHeight() < p[HeightAxis]+d[HeightAxis] || b.GetDepth() < p[DepthAxis]+d[DepthAxis] {
+		if b.width < p[WidthAxis]+d[WidthAxis] || b.height < p[HeightAxis]+d[HeightAxis] || b.depth < p[DepthAxis]+d[DepthAxis] {
 			continue
 		}
 
@@ -126,7 +129,7 @@ func (b *Box) insert(item *Item) {
 }
 
 func (b *Box) purge() {
-	b.items = []*Item{}
+	b.items = b.items[:0] // keep allocated memory
 	b.itemsVolume = 0
 	b.itemsWeight = 0
 }
