@@ -65,6 +65,10 @@ func (i *Item) GetWeight() float64 {
 	return i.weight
 }
 
+func (i *Item) GetPosition() Pivot {
+	return i.position
+}
+
 //nolint:nonamedreturns
 func (i *Item) GetDimension() (d Dimension) {
 	switch i.rotationType {
