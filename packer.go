@@ -17,7 +17,7 @@ func NewPacker() *Packer {
 	return &Packer{}
 }
 
-func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) (*Result, error) {
+func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) *Result {
 	boxes := boxSlice(copySlicePtr(inputBoxes))
 	items := itemSlice(copySlicePtr(inputItems))
 
@@ -39,7 +39,7 @@ func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) (*Result, error) {
 		result.UnfitItems = append(result.UnfitItems, items...)
 	}
 
-	return result, nil
+	return result
 }
 
 func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
