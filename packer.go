@@ -72,10 +72,11 @@ func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
 func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 	var fitted bool
 
-	unpacked := make([]*Item, 0, len(items))
+	cntItems := len(items)
+	unpacked := make([]*Item, 0, cntItems)
 	pv := Pivot{}
 
-	if b.items == nil && b.PutItem(items[0], pv) {
+	if b.items == nil && cntItems > 0 && b.PutItem(items[0], pv) {
 		items = items[1:]
 	}
 
