@@ -79,6 +79,32 @@ func TestBoxPackerSuite(t *testing.T) {
 	suite.Run(t, new(PackerSuit))
 }
 
+func (s *PackerSuit) TestEmptyBoxes() {
+	t := s.T()
+	t.Parallel()
+
+	packer := boxpacker3.NewPacker()
+
+	packResult := packer.Pack(nil, nil)
+	require.NotNil(t, packResult)
+	require.Len(t, packResult.Boxes, 0)
+	require.Len(t, packResult.UnfitItems, 0)
+}
+
+func (s *PackerSuit) TestEmptyItems() {
+	t := s.T()
+	t.Parallel()
+
+	packer := boxpacker3.NewPacker()
+
+	boxes := NewDefaultBoxList()
+
+	packResult := packer.Pack(boxes, nil)
+	require.NotNil(t, packResult)
+	require.Len(t, packResult.Boxes, len(boxes))
+	require.Len(t, packResult.UnfitItems, 0)
+}
+
 func (s *PackerSuit) TestMinBox() {
 	t := s.T()
 	t.Parallel()
