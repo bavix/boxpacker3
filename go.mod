@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/g3n/engine v0.2.0
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.3.1
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 )
