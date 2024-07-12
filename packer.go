@@ -228,26 +228,25 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 			backup := CopyPtr(b)
 			copyItems := CopySlicePtr(b.items)
 
-			// Clean box
-			b.Reset()
+			backup.Reset()
 
-			// Try to put item into the box
-			if b.PutItem(items[i], Pivot{}) {
+			// Try to put item into the backup box
+			if backup.PutItem(items[i], Pivot{}) {
 				// Count of items fit in the box
 				itemsFit := 0
 
 				// Try to put each item in the box
 				for k := 0; k < len(copyItems) && itemsFit < len(copyItems); k++ {
 					// Try to put item in the box
-					for j := len(b.items) - 1; j >= 0; j-- {
-						dimension := b.items[j].GetDimension()
+					for j := len(backup.items) - 1; j >= 0; j-- {
+						dimension := backup.items[j].GetDimension()
 
 						// Try to put item in each axis
 						for _, pt := range []Axis{WidthAxis, HeightAxis, DepthAxis} {
 							// Calculate pivot position
-							pv[WidthAxis] = b.items[j].position[WidthAxis]
-							pv[HeightAxis] = b.items[j].position[HeightAxis]
-							pv[DepthAxis] = b.items[j].position[DepthAxis]
+							pv[WidthAxis] = backup.items[j].position[WidthAxis]
+							pv[HeightAxis] = backup.items[j].position[HeightAxis]
+							pv[DepthAxis] = backup.items[j].position[DepthAxis]
 
 							// Add item dimension to pivot position
 							switch pt {
@@ -260,7 +259,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 							}
 
 							// If item can be put in the box
-							if b.PutItem(copyItems[k], pv) {
+							if backup.PutItem(copyItems[k], pv) {
 								itemsFit++
 
 								break
@@ -271,12 +270,11 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 				// If all items that were in the box now fit in the box
 				fitted = itemsFit == len(copyItems)
-			}
 
-			// If not all items that were in the box now fit in the box
-			if !fitted {
-				// Restore box from backup
-				*b = *backup
+				// If successfully filled, restore backup in b
+				if fitted {
+					*b = *backup
+				}
 			}
 		}
 
@@ -289,4 +287,3 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 	// return unpacked slice
 	return unpacked
-}
