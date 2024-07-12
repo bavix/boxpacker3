@@ -237,9 +237,14 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 				// Try to put each item in the box
 				for k := 0; k < len(copyItems) && itemsFit < len(copyItems); k++ {
-					// Try to put item in the box
 					for j := len(backup.items) - 1; j >= 0; j-- {
 						dimension := backup.items[j].GetDimension()
+
+						// Check if item can be put in the box
+						if backup.PutItem(copyItems[k], backup.items[j].position) {
+							itemsFit++
+							break
+						}
 
 						// Try to put item in each axis
 						for _, pt := range []Axis{WidthAxis, HeightAxis, DepthAxis} {
@@ -261,7 +266,6 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 							// If item can be put in the box
 							if backup.PutItem(copyItems[k], pv) {
 								itemsFit++
-
 								break
 							}
 						}
@@ -287,3 +291,4 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 
 	// return unpacked slice
 	return unpacked
+}
