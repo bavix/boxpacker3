@@ -35,15 +35,12 @@ func NewPacker() *Packer {
 	return &Packer{}
 }
 
-// PackCtx packs items into boxes with a context.
+// PackCtx packs items into boxes asynchronously and handles the context.
 //
 // This function sorts input boxes and items by volume and weight.
 // It selects the box with the largest volume and weight that
 // can accommodate the items. If there are still items left
 // after packing the boxes, they will be set as unfit items.
-//
-// It utilizes a goroutine and a channel to perform the packing process
-// asynchronously and to handle the context.
 //
 // Parameters:
 // - ctx: the context.Context to use.
@@ -54,16 +51,18 @@ func NewPacker() *Packer {
 //   - *Result: the result of packing items into boxes.
 //   - error: If the context is done before the packing process is complete,
 //     an error will be returned. nil will be returned otherwise.
+//
+// This function is useful when you want to pack items into boxes
+// asynchronously and handle the context at the same time.
 func (p *Packer) PackCtx(ctx context.Context, inputBoxes []*Box, inputItems []*Item) (*Result, error) {
 	// Create a channel to receive the result of the packing process.
 	result := make(chan *Result)
+	defer close(result)
 
 	// Start a goroutine to perform the packing process.
 	go func() {
 		// Perform the packing process.
 		result <- p.Pack(inputBoxes, inputItems)
-		// Close the channel to indicate that the packing process is complete.
-		close(result)
 	}()
 
 	// Wait for the context to be done or the packing process to complete.
