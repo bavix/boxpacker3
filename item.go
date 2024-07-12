@@ -2,8 +2,7 @@ package boxpacker3
 
 import (
 	"math"
-
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type Item struct {
@@ -98,17 +97,17 @@ func (i *Item) Intersect(it *Item) bool {
 	d1 := i.GetDimension()
 	d2 := it.GetDimension()
 
-	return rectIntersect(d1, d2, i, it, WidthAxis, HeightAxis) &&
-		rectIntersect(d1, d2, i, it, HeightAxis, DepthAxis) &&
-		rectIntersect(d1, d2, i, it, WidthAxis, DepthAxis)
+	return i.intersect(d1, d2, it, WidthAxis, HeightAxis) &&
+		i.intersect(d1, d2, it, HeightAxis, DepthAxis) &&
+		i.intersect(d1, d2, it, WidthAxis, DepthAxis)
 }
 
-// rectIntersect Checks if two rectangles intersect from the x and y axes of elements i1 and i2.
-func rectIntersect(d1, d2 Dimension, i1, i2 *Item, x, y Axis) bool {
-	cx1 := i1.position[x] + d1[x]/2 //nolint:mnd
-	cy1 := i1.position[y] + d1[y]/2 //nolint:mnd
-	cx2 := i2.position[x] + d2[x]/2 //nolint:mnd
-	cy2 := i2.position[y] + d2[y]/2 //nolint:mnd
+// intersect Checks if two rectangles intersect from the x and y axes of elements i1 and i2.
+func (i *Item) intersect(d1, d2 Dimension, it *Item, x, y Axis) bool {
+	cx1 := i.position[x] + d1[x]/2  //nolint:mnd
+	cy1 := i.position[y] + d1[y]/2  //nolint:mnd
+	cx2 := it.position[x] + d2[x]/2 //nolint:mnd
+	cy2 := it.position[y] + d2[y]/2 //nolint:mnd
 
 	ix := math.Max(cx1, cx2) - math.Min(cx1, cx2)
 	iy := math.Max(cy1, cy2) - math.Min(cy1, cy2)
