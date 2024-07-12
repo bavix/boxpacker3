@@ -13,7 +13,7 @@ import (
 func BenchmarkPacker(b *testing.B) {
 	items := make([]*boxpacker3.Item, 0, 100)
 
-	for range 100 {
+	for range cap(items) {
 		w, _ := rand.Int(rand.Reader, big.NewInt(150))
 		l, _ := rand.Int(rand.Reader, big.NewInt(150))
 		h, _ := rand.Int(rand.Reader, big.NewInt(150))
@@ -31,6 +31,7 @@ func BenchmarkPacker(b *testing.B) {
 	boxes := NewDefaultBoxList()
 	packer := boxpacker3.NewPacker()
 
+	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {

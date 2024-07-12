@@ -1,6 +1,7 @@
 package boxpacker3
 
 import (
+	"context"
 	"slices"
 	"sort"
 )
@@ -34,6 +35,48 @@ func NewPacker() *Packer {
 	return &Packer{}
 }
 
+// PackCtx packs items into boxes with a context.
+//
+// This function sorts input boxes and items by volume and weight.
+// It selects the box with the largest volume and weight that
+// can accommodate the items. If there are still items left
+// after packing the boxes, they will be set as unfit items.
+//
+// It utilizes a goroutine and a channel to perform the packing process
+// asynchronously and to handle the context.
+//
+// Parameters:
+// - ctx: the context.Context to use.
+// - inputBoxes: a list of boxes.
+// - inputItems: a list of items.
+//
+// Returns:
+//   - *Result: the result of packing items into boxes.
+//   - error: If the context is done before the packing process is complete,
+//     an error will be returned. nil will be returned otherwise.
+func (p *Packer) PackCtx(ctx context.Context, inputBoxes []*Box, inputItems []*Item) (*Result, error) {
+	// Create a channel to receive the result of the packing process.
+	result := make(chan *Result)
+
+	// Start a goroutine to perform the packing process.
+	go func() {
+		// Perform the packing process.
+		result <- p.Pack(inputBoxes, inputItems)
+		// Close the channel to indicate that the packing process is complete.
+		close(result)
+	}()
+
+	// Wait for the context to be done or the packing process to complete.
+	select {
+	case <-ctx.Done():
+		// If the context is done, return nil.
+		return nil, ctx.Err()
+	case res := <-result:
+		// If the packing process is complete, return the result.
+		return res, nil
+	}
+}
+
 // Pack packs items into boxes.
 //
 // This function sorts input boxes and items by volume and weight.
@@ -60,7 +103,7 @@ func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) *Result {
 
 	// Create a new Result struct with empty slices.
 	result := &Result{
-		UnfitItems: nil,
+		UnfitItems: make(itemSlice, 0, len(items)),
 		Boxes:      p.preferredSort(boxes, items),
 	}
 
@@ -97,26 +140,31 @@ func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) *Result {
 //     If there is no box that can accommodate the items, the original
 //     slice of boxes is returned.
 func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
-	volume := 0.
-	weight := 0.
-	maxLength := 0.
+	// Calculate the max volume, weight and maxLength of items.
+	volume := 0.0
+	weight := 0.0
+	maxLength := 0.0
 
 	for _, item := range items {
 		volume += item.GetVolume()
 		weight += item.GetWeight()
 
-		// optimize
 		if maxLength < item.maxLength {
 			maxLength = item.maxLength
 		}
 	}
 
+	// Find the preferred box
 	for i, b := range boxes {
+		// Check if the box can accommodate the items.
 		if b.volume >= volume && b.maxWeight >= weight && b.maxLength >= maxLength {
+			// If the box can accommodate the items, return the box as the preferred box
+			// and the remaining boxes sorted after the preferred box.
 			return append(boxSlice{b}, slices.Delete(boxes, i, i+1)...)
 		}
 	}
 
+	// If there is no box that can accommodate the items, return the original slice of boxes.
 	return boxes
 }
 
@@ -155,21 +203,14 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 			dimension := b.items[j].GetDimension()
 
 			// for each axis
-			for _, pt := range []Axis{WidthAxis, HeightAxis, DepthAxis} {
+			for _, axis := range []Axis{WidthAxis, HeightAxis, DepthAxis} {
 				// calculate pivot position
 				pv[WidthAxis] = b.items[j].position[WidthAxis]
 				pv[HeightAxis] = b.items[j].position[HeightAxis]
 				pv[DepthAxis] = b.items[j].position[DepthAxis]
 
 				// add item dimension to pivot position
-				switch pt {
-				case WidthAxis:
-					pv[WidthAxis] += dimension[WidthAxis]
-				case HeightAxis:
-					pv[HeightAxis] += dimension[HeightAxis]
-				case DepthAxis:
-					pv[DepthAxis] += dimension[DepthAxis]
-				}
+				pv[axis] += dimension[axis]
 
 				// if item can be put in the box
 				if b.PutItem(i, pv) {
@@ -187,7 +228,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 			copyItems := CopySlicePtr(b.items)
 
 			// clean box
-			b.purge()
+			b.Reset()
 
 			// try to put item into the box
 			if b.PutItem(i, Pivot{}) {

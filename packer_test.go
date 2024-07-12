@@ -51,22 +51,32 @@ const (
 	BoxTypeNotStd6 = "981ffb30-a7b9-4d9e-820e-04de2145763e"
 )
 
+var defaultBoxes = []struct {
+	Type               string
+	W, H, L, MaxWeight float64
+}{
+	{BoxTypeF, 220, 185, 50, 20000},
+	{BoxTypeE, 165, 215, 100, 20000},
+	{BoxTypeG, 265, 165, 190, 20000},
+	{BoxTypeC, 425, 165, 190, 20000},
+	{BoxTypeB, 425, 265, 190, 20000},
+	{BoxTypeA, 425, 265, 380, 20000},
+	{BoxTypeStd, 530, 380, 265, 20000},
+	{BoxTypeNotStd1, 1000, 500, 500, 20000},
+	{BoxTypeNotStd2, 1000, 1000, 1000, 20000},
+	{BoxTypeNotStd3, 2000, 500, 500, 20000},
+	{BoxTypeNotStd4, 2000, 2000, 2000, 20000},
+	{BoxTypeNotStd5, 2500, 2500, 2500, 20000},
+	{BoxTypeNotStd6, 3000, 3000, 3000, 20000},
+}
+
 func NewDefaultBoxList() []*boxpacker3.Box {
-	return []*boxpacker3.Box{
-		boxpacker3.NewBox(BoxTypeF, 220, 185, 50, 20000),           // 0
-		boxpacker3.NewBox(BoxTypeE, 165, 215, 100, 20000),          // 1
-		boxpacker3.NewBox(BoxTypeG, 265, 165, 190, 20000),          // 2
-		boxpacker3.NewBox(BoxTypeC, 425, 165, 190, 20000),          // 3
-		boxpacker3.NewBox(BoxTypeB, 425, 265, 190, 20000),          // 4
-		boxpacker3.NewBox(BoxTypeA, 425, 265, 380, 20000),          // 5
-		boxpacker3.NewBox(BoxTypeStd, 530, 380, 265, 20000),        // 6
-		boxpacker3.NewBox(BoxTypeNotStd1, 1000, 500, 500, 20000),   // 7
-		boxpacker3.NewBox(BoxTypeNotStd2, 1000, 1000, 1000, 20000), // 8
-		boxpacker3.NewBox(BoxTypeNotStd3, 2000, 500, 500, 20000),   // 9
-		boxpacker3.NewBox(BoxTypeNotStd4, 2000, 2000, 2000, 20000), // 10
-		boxpacker3.NewBox(BoxTypeNotStd5, 2500, 2500, 2500, 20000), // 11
-		boxpacker3.NewBox(BoxTypeNotStd6, 3000, 3000, 3000, 20000), // 12
+	boxes := make([]*boxpacker3.Box, 0, len(defaultBoxes))
+	for _, box := range defaultBoxes {
+		boxes = append(boxes, boxpacker3.NewBox(box.Type, box.W, box.H, box.L, box.MaxWeight))
 	}
+
+	return boxes
 }
 
 type PackerSuit struct {
