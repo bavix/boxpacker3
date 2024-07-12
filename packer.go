@@ -157,9 +157,11 @@ func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
 	for i, b := range boxes {
 		// Check if the box can accommodate the items.
 		if b.volume >= volume && b.maxWeight >= weight && b.maxLength >= maxLength {
+			result := make(boxSlice, 0, len(boxes))
+
 			// If the box can accommodate the items, return the box as the preferred box
 			// and the remaining boxes sorted after the preferred box.
-			return append(boxSlice{b}, slices.Delete(boxes, i, i+1)...)
+			return append(append(result, b), slices.Delete(boxes, i, i+1)...)
 		}
 	}
 
