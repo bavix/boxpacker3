@@ -182,7 +182,7 @@ func (p *Packer) preferredSort(boxes boxSlice, items itemSlice) boxSlice {
 // Returns:
 //   - a slice of items that did not fit into the box.
 //
-//nolint:funlen,gocognit,cyclop
+//nolint:funlen,gocognit,cyclop,nestif
 func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 	var fitted bool
 
@@ -243,6 +243,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 						// Check if item can be put in the box
 						if backup.PutItem(copyItems[k], backup.items[j].position) {
 							itemsFit++
+
 							break
 						}
 
@@ -266,6 +267,7 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 							// If item can be put in the box
 							if backup.PutItem(copyItems[k], pv) {
 								itemsFit++
+
 								break
 							}
 						}
