@@ -1,9 +1,5 @@
 package boxpacker3
 
-import (
-	"slices"
-)
-
 // Box represents a box that can hold items.
 //
 // It has fields for the box's dimensions and maximum weight.
@@ -79,9 +75,9 @@ func NewBox(id string, w, h, d, mw float64) *Box {
 		height:    h,
 		depth:     d,
 		maxWeight: mw,
-		maxLength: slices.Max([]float64{w, h, d}),
+		maxLength: max(w, h, d),
 		volume:    w * h * d,
-		items:     nil,
+		items:     make([]*Item, 0, 1),
 	}
 }
 
