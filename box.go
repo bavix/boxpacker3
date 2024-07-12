@@ -1,7 +1,7 @@
 package boxpacker3
 
 import (
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type Box struct {
