@@ -1,9 +1,8 @@
 package boxpacker3
 
 import (
+	"slices"
 	"sort"
-
-	"golang.org/x/exp/slices"
 )
 
 type Packer struct{}
@@ -18,8 +17,8 @@ func NewPacker() *Packer {
 }
 
 func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) *Result {
-	boxes := boxSlice(copySlicePtr(inputBoxes))
-	items := itemSlice(copySlicePtr(inputItems))
+	boxes := boxSlice(CopySlicePtr(inputBoxes))
+	items := itemSlice(CopySlicePtr(inputItems))
 
 	sort.Sort(boxes)
 	sort.Sort(items)
@@ -107,8 +106,8 @@ func (p *Packer) packToBox(b *Box, items []*Item) []*Item {
 		}
 
 		if !fitted {
-			backup := copyPtr(b)
-			copyItems := copySlicePtr(b.items)
+			backup := CopyPtr(b)
+			copyItems := CopySlicePtr(b.items)
 
 			b.purge()
 

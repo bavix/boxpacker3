@@ -87,8 +87,8 @@ func (s *PackerSuit) TestEmptyBoxes() {
 
 	packResult := packer.Pack(nil, nil)
 	require.NotNil(t, packResult)
-	require.Len(t, packResult.Boxes, 0)
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.Boxes)
+	require.Empty(t, packResult.UnfitItems)
 }
 
 func (s *PackerSuit) TestEmptyItems() {
@@ -102,7 +102,7 @@ func (s *PackerSuit) TestEmptyItems() {
 	packResult := packer.Pack(boxes, nil)
 	require.NotNil(t, packResult)
 	require.Len(t, packResult.Boxes, len(boxes))
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 }
 
 func (s *PackerSuit) TestMinBox() {
@@ -125,9 +125,9 @@ func (s *PackerSuit) TestMinBox() {
 		BoxTypeF: 1,
 	}
 
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
+	for i := range len(packResult.Boxes) {
 		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()])
 	}
 }
@@ -154,9 +154,9 @@ func (s *PackerSuit) TestRotate() {
 		BoxTypeStd: 5,
 	}
 
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
+	for i := range len(packResult.Boxes) {
 		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()], packResult.Boxes[i].GetID())
 	}
 }
@@ -183,9 +183,9 @@ func (s *PackerSuit) TestStd() {
 		BoxTypeStd: 5,
 	}
 
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
+	for i := range len(packResult.Boxes) {
 		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()], packResult.Boxes[i].GetID())
 	}
 }
@@ -218,9 +218,9 @@ func (s *PackerSuit) TestBoxTypeF() {
 		BoxTypeF: 8,
 	}
 
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
+	for i := range len(packResult.Boxes) {
 		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()], packResult.Boxes[i].GetID())
 	}
 }
@@ -254,9 +254,9 @@ func (s *PackerSuit) TestBoxTypeF_Weight() {
 		BoxTypeE: 1,
 	}
 
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
+	for i := range len(packResult.Boxes) {
 		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()], packResult.Boxes[i].GetID())
 	}
 }
@@ -294,9 +294,9 @@ func (s *PackerSuit) TestPacker_AllBoxes() {
 	packResult := packer.Pack(boxes, items)
 	require.NotNil(t, packResult)
 
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
+	for i := range len(packResult.Boxes) {
 		require.Len(t, packResult.Boxes[i].GetItems(), 1)
 	}
 }
@@ -320,8 +320,8 @@ func (s *PackerSuit) TestPacker_UnfitItems() {
 
 	require.Len(t, packResult.UnfitItems, 4)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
-		require.Len(t, packResult.Boxes[i].GetItems(), 0, packResult.Boxes[i].GetID())
+	for i := range len(packResult.Boxes) {
+		require.Empty(t, packResult.Boxes[i].GetItems(), packResult.Boxes[i].GetID())
 	}
 }
 
@@ -378,9 +378,9 @@ func (s *PackerSuit) TestPacker_MinAndStd() {
 		BoxTypeNotStd6: 1, // 14
 	}
 
-	require.Len(t, packResult.UnfitItems, 0)
+	require.Empty(t, packResult.UnfitItems)
 
-	for i := 0; i < len(packResult.Boxes); i++ {
+	for i := range len(packResult.Boxes) {
 		require.Len(t, packResult.Boxes[i].GetItems(), checks[packResult.Boxes[i].GetID()], packResult.Boxes[i].GetID())
 	}
 }
