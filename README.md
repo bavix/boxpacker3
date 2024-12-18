@@ -20,8 +20,3 @@ packResult := packer.Pack(boxes, items)
 fmt.Println(packResult.Boxes) // boxes and items
 fmt.Println(packResult.UnfitItems) // Items that didn't fit in boxes
 ```
-
----
-Supported by
-
-[![Supported by JetBrains](https://cdn.rawgit.com/bavix/development-through/46475b4b/jetbrains.svg)](https://www.jetbrains.com/)
