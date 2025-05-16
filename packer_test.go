@@ -119,9 +119,6 @@ func (s *PackerSuit) TestEmptyBoxes() {
 	// Get the testing.T instance
 	t := s.T()
 
-	// Run the test in parallel
-	t.Parallel()
-
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()
 
@@ -144,9 +141,6 @@ func (s *PackerSuit) TestEmptyBoxes() {
 func (s *PackerSuit) TestEmptyItems() {
 	// Get the testing.T instance
 	t := s.T()
-
-	// Run the test in parallel
-	t.Parallel()
 
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()
@@ -178,9 +172,6 @@ func (s *PackerSuit) TestEmptyItems() {
 func (s *PackerSuit) TestMinBox() {
 	// Get the testing.T instance
 	t := s.T()
-
-	// Run the test in parallel
-	t.Parallel()
 
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()
@@ -227,7 +218,6 @@ func (s *PackerSuit) TestMinBox() {
 // is correct.
 func (s *PackerSuit) TestRotate() {
 	t := s.T()
-	t.Parallel()
 
 	packer := boxpacker3.NewPacker()
 	boxes := NewDefaultBoxList()
@@ -264,7 +254,6 @@ func (s *PackerSuit) TestRotate() {
 // slice is correct.
 func (s *PackerSuit) TestStd() {
 	t := s.T()
-	t.Parallel()
 
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()
@@ -314,7 +303,6 @@ func (s *PackerSuit) TestStd() {
 // PackResult.Boxes slice is correct.
 func (s *PackerSuit) TestBoxTypeF() {
 	t := s.T()
-	t.Parallel()
 
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()
@@ -370,7 +358,6 @@ func (s *PackerSuit) TestBoxTypeF() {
 // of items in each box in the PackResult.Boxes slice is correct.
 func (s *PackerSuit) TestBoxTypeF_Weight() {
 	t := s.T()
-	t.Parallel()
 
 	packer := boxpacker3.NewPacker()
 	boxes := NewDefaultBoxList()
@@ -417,7 +404,6 @@ func (s *PackerSuit) TestBoxTypeF_Weight() {
 // assigns each item to a box.
 func (s *PackerSuit) TestPacker_AllBoxes() {
 	t := s.T()
-	t.Parallel()
 
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()
@@ -475,7 +461,6 @@ func (s *PackerSuit) TestPacker_AllBoxes() {
 // correct and that no items are packed into any boxes.
 func (s *PackerSuit) TestPacker_UnfitItems() {
 	t := s.T()
-	t.Parallel()
 
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()
@@ -509,11 +494,8 @@ func (s *PackerSuit) TestPacker_UnfitItems() {
 // TestPacker_MinAndStd tests the Packer.Pack function with a combination of
 // standard and minimum sized items. It verifies that the packing is correct
 // and that the number of items in each box is correct.
-//
-//nolint:funlen
 func (s *PackerSuit) TestPacker_MinAndStd() {
 	t := s.T()
-	t.Parallel()
 
 	// Create a new Packer instance
 	packer := boxpacker3.NewPacker()

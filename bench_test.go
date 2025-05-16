@@ -48,7 +48,7 @@ func BenchmarkPacker(b *testing.B) {
 	b.ResetTimer()
 
 	// Iterate over the items and pack them into boxes
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = packer.Pack(boxes, items)
 	}
 }

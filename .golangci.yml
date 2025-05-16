@@ -1,35 +1,53 @@
+version: "2"
 run:
   go: "1.22"
-  timeout: 1m
 linters:
-  enable-all: true
+  default: all
   disable:
-    # deprecated
-    - execinquery
-    - gomnd
-    # not relevant
-    - wrapcheck
-    - paralleltest
+    - funcorder
     - exhaustruct
-    - tagalign
     - varnamelen
-linters-settings:
-  lll:
-    line-length: 140
-  gci:
-    sections:
-      - Standard
-      - Default
-      - Prefix(github.com/bavix)
-  depguard:
+    - wrapcheck
+  settings:
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - github.com
+    lll:
+      line-length: 140
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      main:
-        allow:
-          - $gostd
-          - github.com
-issues:
-  exclude-rules:
-    - path: (.+)_test.go
-      linters:
-        - gochecknoglobals
-        - dupl
+      - linters:
+          - dupl
+          - gochecknoglobals
+        path: (.+)_test.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - Standard
+        - Default
+        - Prefix(github.com/bavix)
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
