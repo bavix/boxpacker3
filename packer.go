@@ -90,7 +90,7 @@ func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) *Result {
 // packInternal packs items into boxes with context support for cancellation.
 // This is the internal implementation used by both Pack and PackCtx.
 //
-//nolint:cyclop,funlen
+//nolint:cyclop
 func (p *Packer) packInternal(ctx context.Context, inputBoxes []*Box, inputItems []*Item) *Result {
 	if inputBoxes == nil {
 		inputBoxes = []*Box{}
@@ -120,21 +120,7 @@ func (p *Packer) packInternal(ctx context.Context, inputBoxes []*Box, inputItems
 	switch p.strategy {
 	case StrategyBestFit, StrategyBestFitDecreasing:
 		items = p.packWithBestFit(ctx, result.Boxes, items)
-	case StrategyMinimizeBoxes:
-		for _, box := range result.Boxes {
-			select {
-			case <-ctx.Done():
-				return result
-			default:
-			}
-
-			if len(items) == 0 {
-				break
-			}
-
-			items = p.packToBox(ctx, box, items)
-		}
-	case StrategyGreedy:
+	case StrategyMinimizeBoxes, StrategyGreedy:
 		for _, box := range result.Boxes {
 			select {
 			case <-ctx.Done():
