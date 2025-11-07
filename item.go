@@ -104,8 +104,11 @@ func (i *Item) intersect(it *Item, x, y Axis) bool {
 	matrix2 := rotationMatrix[it.rotationType]
 
 	d1x := i.whd[matrix1[x]]
+
 	d1y := i.whd[matrix1[y]]
+
 	d2x := it.whd[matrix2[x]]
+
 	d2y := it.whd[matrix2[y]]
 
 	const minDimension = 1e-10

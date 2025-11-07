@@ -103,8 +103,11 @@ func (b *Box) PutItem(item *Item, p Pivot) bool {
 	for rt := RotationTypeWhd; rt <= RotationTypeWdh; rt++ {
 		matrix := rotationMatrix[rt]
 
+		//nolint:gosec // rotationMatrix values are guaranteed to be in range [0, 2] by const definition
 		itemWidth := item.whd[matrix[WidthAxis]]
+		//nolint:gosec // rotationMatrix values are guaranteed to be in range [0, 2] by const definition
 		itemHeight := item.whd[matrix[HeightAxis]]
+		//nolint:gosec // rotationMatrix values are guaranteed to be in range [0, 2] by const definition
 		itemDepth := item.whd[matrix[DepthAxis]]
 
 		if b.width < p[WidthAxis]+itemWidth ||
