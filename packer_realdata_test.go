@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -41,7 +42,8 @@ func TestPacker_RealWorld_ECommerceOrder(t *testing.T) {
 			t.Parallel()
 
 			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result := packer.Pack(boxes, items)
+			result, err := packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 
 			require.NotNil(t, result)
 			validatePackingInvariants(t, result)
@@ -92,7 +94,8 @@ func TestPacker_RealWorld_WarehousePacking(t *testing.T) {
 	}
 
 	packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFitDecreasing))
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
@@ -144,7 +147,8 @@ func TestPacker_RealWorld_MovingBoxes(t *testing.T) {
 	}
 
 	packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyMinimizeBoxes))
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
@@ -193,7 +197,8 @@ func TestPacker_RealWorld_RetailStore(t *testing.T) {
 			t.Parallel()
 
 			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result := packer.Pack(boxes, items)
+			result, err := packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 
 			require.NotNil(t, result)
 			validatePackingInvariants(t, result)
@@ -231,7 +236,8 @@ func TestPacker_RealWorld_MixedConstraints(t *testing.T) {
 	}
 
 	packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFit))
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)

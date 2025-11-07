@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -36,7 +37,8 @@ func Test2DPacking(t *testing.T) {
 
 	// Create packer and pack items
 	packer := boxpacker3.NewPacker()
-	result := packer.Pack([]*boxpacker3.Box{box}, items)
+	result, err := packer.PackCtx(context.Background(), []*boxpacker3.Box{box}, items)
+	require.NoError(t, err)
 
 	// Verify packing result
 	require.NotNil(t, result)
@@ -74,7 +76,8 @@ func Test2DPackingMultipleBoxes(t *testing.T) {
 
 	// Create packer and pack items
 	packer := boxpacker3.NewPacker()
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	// Verify packing result
 	require.NotNil(t, result)

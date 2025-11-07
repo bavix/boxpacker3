@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -123,7 +124,8 @@ func (s *PackerSuit) TestEmptyBoxes() {
 	packer := boxpacker3.NewPacker()
 
 	// Call the Pack function with nil for the boxes and items parameters
-	packResult := packer.Pack(nil, nil)
+	packResult, err := packer.PackCtx(context.Background(), nil, nil)
+	require.NoError(t, err)
 
 	// Verify the PackResult
 	require.NotNil(t, packResult, "Pack function returned nil")
@@ -149,7 +151,8 @@ func (s *PackerSuit) TestEmptyItems() {
 	boxes := NewDefaultBoxList()
 
 	// Call the Pack function with the boxes and nil items parameters
-	packResult := packer.Pack(boxes, nil)
+	packResult, err := packer.PackCtx(context.Background(), boxes, nil)
+	require.NoError(t, err)
 
 	// Verify the PackResult
 	require.NotNil(t, packResult, "Pack function returned nil")
@@ -189,7 +192,8 @@ func (s *PackerSuit) TestMinBox() {
 		384)
 
 	// Call the Pack function with the boxes and a single item
-	packResult := packer.Pack(boxes, []*boxpacker3.Item{item})
+	packResult, err := packer.PackCtx(context.Background(), boxes, []*boxpacker3.Item{item})
+	require.NoError(t, err)
 
 	// Verify the PackResult
 	require.NotNil(t, packResult, "Pack function returned nil")
@@ -234,7 +238,8 @@ func (s *PackerSuit) TestRotate() {
 		boxpacker3.NewItem(uuid.New().String(), 100, 380, 250, 2690),
 	}
 
-	packResult := packer.Pack(boxes, items)
+	packResult, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, packResult)
 
 	checks := map[string]int{
@@ -276,7 +281,8 @@ func (s *PackerSuit) TestStd() {
 	}
 
 	// Call the Pack function with the boxes and standard items
-	packResult := packer.Pack(boxes, items)
+	packResult, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	// Verify the PackResult
 	require.NotNil(t, packResult, "Pack function returned nil")
@@ -333,7 +339,8 @@ func (s *PackerSuit) TestBoxTypeF() {
 	}
 
 	// Call the Pack function with the boxes and items
-	packResult := packer.Pack(boxes, items)
+	packResult, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	// Verify the PackResult
 	require.NotNil(t, packResult, "Pack function returned nil")
@@ -385,7 +392,8 @@ func (s *PackerSuit) TestBoxTypeF_Weight() {
 		boxpacker3.NewItem(uuid.New().String(), 35, 100, 100, 2690), // 12
 	}
 
-	packResult := packer.Pack(boxes, items)
+	packResult, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, packResult, "Pack function returned nil")
 
 	// Verify that the number of boxes is correct (all boxes should be returned, even empty)
@@ -447,7 +455,8 @@ func (s *PackerSuit) TestPacker_AllBoxes() {
 	}
 
 	// Pack the items into the boxes
-	packResult := packer.Pack(boxes, items)
+	packResult, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	// Verify that the packing was successful
 	require.NotNil(t, packResult, "Pack function returned nil")
@@ -486,7 +495,8 @@ func (s *PackerSuit) TestPacker_UnfitItems() {
 	}
 
 	// Pack the items into the boxes
-	packResult := packer.Pack(boxes, items)
+	packResult, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 
 	// Verify that the packing was successful
 	require.NotNil(t, packResult, "Pack function returned nil")
@@ -544,7 +554,8 @@ func (s *PackerSuit) TestPacker_MinAndStd() {
 	}
 
 	// Pack the items into the boxes
-	packResult := packer.Pack(reverse, items)
+	packResult, err := packer.PackCtx(context.Background(), reverse, items)
+	require.NoError(t, err)
 
 	// Verify that the packing was successful
 	require.NotNil(t, packResult, "Pack function returned nil")

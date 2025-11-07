@@ -67,6 +67,9 @@ func (p *Packer) PackCtx(ctx context.Context, inputBoxes []*Box, inputItems []*I
 
 // Pack packs items into boxes.
 //
+// Deprecated: Use PackCtx instead. This function is kept for backward compatibility
+// but PackCtx provides better control with context support for cancellation.
+//
 // This function sorts input boxes and items by volume and weight.
 // It selects the box with the largest volume and weight that
 // can accommodate the items. If there are still items left

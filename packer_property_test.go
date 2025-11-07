@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -114,8 +115,8 @@ func TestPacker_Property_AllItemsAccountedFor(t *testing.T) {
 				t.Parallel()
 
 				packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-				result := packer.Pack(tc.boxes, tc.items)
-
+				result, err := packer.PackCtx(context.Background(), tc.boxes, tc.items)
+				require.NoError(t, err)
 				require.NotNil(t, result)
 
 				// Property: All items must be accounted for
@@ -165,8 +166,8 @@ func TestPacker_Property_NoDuplicates(t *testing.T) {
 			t.Parallel()
 
 			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result := packer.Pack(boxes, items)
-
+			result, err := packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			// Property: No item should appear multiple times
@@ -226,8 +227,8 @@ func TestPacker_Property_NoIntersections(t *testing.T) {
 			t.Parallel()
 
 			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result := packer.Pack(boxes, items)
-
+			result, err := packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			// Property: No items should intersect within the same box
@@ -277,8 +278,8 @@ func TestPacker_Property_WeightConstraints(t *testing.T) {
 			t.Parallel()
 
 			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result := packer.Pack(boxes, items)
-
+			result, err := packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			// Property: Weight constraints must be respected

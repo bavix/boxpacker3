@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -26,7 +27,8 @@ func TestPacker_StrategyNextFit_NextBoxBehavior(t *testing.T) {
 		boxpacker3.NewItem("item-3", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -51,7 +53,8 @@ func TestPacker_StrategyNextFit_EmptyBoxes(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 
 	require.Empty(t, result.Boxes, "Should have no boxes")
@@ -73,7 +76,8 @@ func TestPacker_StrategyNextFit_UnfitItems(t *testing.T) {
 		boxpacker3.NewItem("unfit-item", 100, 100, 100, 1000), // Too large
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -105,7 +109,8 @@ func TestPacker_StrategyWorstFit_SelectsWorstBox(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -139,7 +144,8 @@ func TestPacker_StrategyWorstFit_EmptyBoxes(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 
 	require.Empty(t, result.Boxes, "Should have no boxes")
@@ -161,7 +167,8 @@ func TestPacker_StrategyWorstFit_UnfitItems(t *testing.T) {
 		boxpacker3.NewItem("unfit-item", 100, 100, 100, 1000), // Too large
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -196,7 +203,8 @@ func TestPacker_StrategyAlmostWorstFit_ExcludesEmptyBoxes(t *testing.T) {
 		boxpacker3.NewItem("item-1", 30, 30, 30, 200),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -224,7 +232,8 @@ func TestPacker_StrategyAlmostWorstFit_EmptyBoxes(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 
 	require.Empty(t, result.Boxes, "Should have no boxes")
@@ -246,7 +255,8 @@ func TestPacker_StrategyAlmostWorstFit_UnfitItems(t *testing.T) {
 		boxpacker3.NewItem("unfit-item", 100, 100, 100, 1000), // Too large
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -276,7 +286,8 @@ func TestPacker_StrategyAlmostWorstFit_FallbackToWorstFit(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -312,7 +323,8 @@ func TestPacker_AllNewStrategies_PackAllItems(t *testing.T) {
 		t.Run(strategy.name, func(t *testing.T) {
 			t.Parallel()
 
-			result := strategy.packer.Pack(boxes, items)
+			result, err := strategy.packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			validatePackingInvariants(t, result)

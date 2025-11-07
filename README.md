@@ -5,6 +5,11 @@ A 3D and 2D bin packing library in golang.
 ## Usage
 
 ```golang
+import (
+  "context"
+  "github.com/bavix/boxpacker3"
+)
+
 packer := boxpacker3.NewPacker()
 
 boxes := []*boxpacker3.Box{
@@ -16,7 +21,10 @@ items := []*boxpacker3.Item{
   boxpacker3.NewItem("product 3", 5, 100, 100, 2690),
 }
 
-packResult := packer.Pack(boxes, items)
+packResult, err := packer.PackCtx(context.Background(), boxes, items)
+if err != nil {
+  // handle error
+}
 fmt.Println(packResult.Boxes) // boxes and items
 fmt.Println(packResult.UnfitItems) // Items that didn't fit in boxes
 ```
@@ -36,7 +44,10 @@ items := []*boxpacker3.Item{
   boxpacker3.NewItem2D("sheet 2", 40, 25, 100),
 }
 
-packResult := packer.Pack(boxes, items)
+packResult, err := packer.PackCtx(context.Background(), boxes, items)
+if err != nil {
+  // handle error
+}
 ```
 
 2D boxes and items work seamlessly with all packing strategies and can be mixed with regular 3D boxes and items if needed.
@@ -73,5 +84,8 @@ packer := boxpacker3.NewPacker(
   boxpacker3.WithStrategy(boxpacker3.StrategyBestFitDecreasing),
 )
 
-packResult := packer.Pack(boxes, items)
+packResult, err := packer.PackCtx(context.Background(), boxes, items)
+if err != nil {
+  // handle error
+}
 ```

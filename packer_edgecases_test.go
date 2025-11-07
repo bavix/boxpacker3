@@ -18,9 +18,10 @@ func TestPacker_Pack_NilInputs(t *testing.T) {
 	packer := boxpacker3.NewPacker()
 
 	// Test with nil boxes
-	result := packer.Pack(nil, []*boxpacker3.Item{
+	result, err := packer.PackCtx(context.Background(), nil, []*boxpacker3.Item{
 		boxpacker3.NewItem("item1", 10, 10, 10, 1),
 	})
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.NotNil(t, result.Boxes)
 	require.NotNil(t, result.UnfitItems)
@@ -28,14 +29,16 @@ func TestPacker_Pack_NilInputs(t *testing.T) {
 
 	// Test with nil items
 	box := boxpacker3.NewBox("box1", 100, 100, 100, 100)
-	result = packer.Pack([]*boxpacker3.Box{box}, nil)
+	result, err = packer.PackCtx(context.Background(), []*boxpacker3.Box{box}, nil)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.NotNil(t, result.Boxes)
 	require.NotNil(t, result.UnfitItems)
 	require.Empty(t, result.UnfitItems, "No items should be in UnfitItems")
 
 	// Test with both nil
-	result = packer.Pack(nil, nil)
+	result, err = packer.PackCtx(context.Background(), nil, nil)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.NotNil(t, result.Boxes)
 	require.NotNil(t, result.UnfitItems)
@@ -53,12 +56,14 @@ func TestPacker_Pack_NilElementsInSlices(t *testing.T) {
 	item := boxpacker3.NewItem("item1", 10, 10, 10, 1)
 
 	// Test with nil box in slice
-	result := packer.Pack([]*boxpacker3.Box{box, nil, box}, []*boxpacker3.Item{item})
+	result, err := packer.PackCtx(context.Background(), []*boxpacker3.Box{box, nil, box}, []*boxpacker3.Item{item})
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.GreaterOrEqual(t, len(result.Boxes), 1, "Should have at least one box")
 
 	// Test with nil item in slice
-	result = packer.Pack([]*boxpacker3.Box{box}, []*boxpacker3.Item{item, nil, item})
+	result, err = packer.PackCtx(context.Background(), []*boxpacker3.Box{box}, []*boxpacker3.Item{item, nil, item})
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	// Count all items
 	// Note: With StrategyMinimizeBoxes (default), nil items are added to unpacked in packToBox
@@ -281,11 +286,13 @@ func TestPacker_AllStrategies_NilHandling(t *testing.T) {
 			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
 
 			// Test with nil item in slice
-			result := packer.Pack([]*boxpacker3.Box{box}, []*boxpacker3.Item{item, nil, item})
+			result, err := packer.PackCtx(context.Background(), []*boxpacker3.Box{box}, []*boxpacker3.Item{item, nil, item})
+			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			// Test with nil box in slice
-			result = packer.Pack([]*boxpacker3.Box{box, nil, box}, []*boxpacker3.Item{item})
+			result, err = packer.PackCtx(context.Background(), []*boxpacker3.Box{box, nil, box}, []*boxpacker3.Item{item})
+			require.NoError(t, err)
 			require.NotNil(t, result)
 		})
 	}

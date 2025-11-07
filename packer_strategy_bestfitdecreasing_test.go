@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -26,7 +27,8 @@ func TestPacker_StrategyBestFitDecreasing_ItemsSortedDescending(t *testing.T) {
 		boxpacker3.NewItem("medium", 30, 30, 30, 150), // Volume: 27000
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -70,7 +72,8 @@ func TestPacker_StrategyBestFitDecreasing_SelectsBestBox(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -166,7 +169,8 @@ func TestPacker_StrategyBestFitDecreasing_EmptyBoxes(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 
 	require.Empty(t, result.Boxes, "Should have no boxes")
@@ -184,7 +188,8 @@ func TestPacker_StrategyBestFitDecreasing_EmptyItems(t *testing.T) {
 	}
 	items := []*boxpacker3.Item{}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 
 	require.Empty(t, result.UnfitItems, "Should have no unfit items")
@@ -212,7 +217,8 @@ func TestPacker_StrategyBestFitDecreasing_UnfitItems(t *testing.T) {
 		boxpacker3.NewItem("unfit-item", 100, 100, 100, 1000), // Too large
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -251,7 +257,8 @@ func TestPacker_StrategyBestFitDecreasing_WeightConstraints(t *testing.T) {
 		boxpacker3.NewItem("light-1", 20, 20, 20, 50),  // Weight: 50
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -283,7 +290,8 @@ func TestPacker_StrategyBestFitDecreasing_GeometricPlacement(t *testing.T) {
 		boxpacker3.NewItem("item-2", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
@@ -328,7 +336,8 @@ func TestPacker_StrategyBestFitDecreasing_ComplexScenario(t *testing.T) {
 		boxpacker3.NewItem("tiny-2", 10, 10, 10, 50),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	validatePackingInvariants(t, result)
 
