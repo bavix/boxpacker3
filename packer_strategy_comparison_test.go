@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -40,7 +41,8 @@ func TestPacker_AllStrategies_PackAllItems(t *testing.T) {
 		t.Run(strategy.name, func(t *testing.T) {
 			t.Parallel()
 
-			result := strategy.packer.Pack(boxes, items)
+			result, err := strategy.packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			validatePackingInvariants(t, result)
@@ -88,7 +90,8 @@ func TestPacker_AllStrategies_HandleUnfitItems(t *testing.T) {
 		t.Run(strategy.name, func(t *testing.T) {
 			t.Parallel()
 
-			result := strategy.packer.Pack(boxes, items)
+			result, err := strategy.packer.PackCtx(context.Background(), boxes, items)
+			require.NoError(t, err)
 			require.NotNil(t, result)
 			validatePackingInvariants(t, result)
 
@@ -144,7 +147,8 @@ func TestPacker_StrategyComparison_SpaceUtilization(t *testing.T) {
 	results := make(map[string]*boxpacker3.Result)
 
 	for _, strategy := range strategies {
-		result := strategy.packer.Pack(boxes, items)
+		result, err := strategy.packer.PackCtx(context.Background(), boxes, items)
+		require.NoError(t, err)
 		require.NotNil(t, result)
 		validatePackingInvariants(t, result)
 		results[strategy.name] = result

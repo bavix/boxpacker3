@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -42,8 +43,8 @@ func TestPacker_StrategyMinimizeBoxes_MixedPackaging(t *testing.T) {
 		boxpacker3.NewItem("item-15", 210, 140, 100, 1600),
 	}
 
-	result := packer.Pack(boxes, items)
-
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Empty(t, result.UnfitItems, "All items should be packed")
 

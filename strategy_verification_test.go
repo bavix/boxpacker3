@@ -1,6 +1,7 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -51,7 +52,8 @@ func TestStrategy_DifferentResults(t *testing.T) {
 	// Run each strategy
 	for _, s := range strategies {
 		packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(s.strategy))
-		result := packer.Pack(boxes, items)
+		result, err := packer.PackCtx(context.Background(), boxes, items)
+		require.NoError(t, err)
 		require.NotNil(t, result, "Strategy %s should return a result", s.name)
 		// AlmostWorstFit may not pack all items if boxes are too empty
 		if s.strategy != boxpacker3.StrategyAlmostWorstFit {
@@ -120,7 +122,8 @@ func TestStrategy_SortingOrder(t *testing.T) {
 	// For descending strategies, large item should be packed first
 	for _, strategy := range descendingStrategies {
 		packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-		result := packer.Pack(boxes, items)
+		result, err := packer.PackCtx(context.Background(), boxes, items)
+		require.NoError(t, err)
 		require.NotNil(t, result)
 		require.NotEmpty(t, result.Boxes)
 
@@ -136,7 +139,8 @@ func TestStrategy_SortingOrder(t *testing.T) {
 	// For ascending strategies, small item should be packed first
 	for _, strategy := range ascendingStrategies {
 		packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-		result := packer.Pack(boxes, items)
+		result, err := packer.PackCtx(context.Background(), boxes, items)
+		require.NoError(t, err)
 		require.NotNil(t, result)
 		require.NotEmpty(t, result.Boxes)
 
@@ -169,7 +173,8 @@ func TestStrategy_BestFit_SelectsBestBox(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Empty(t, result.UnfitItems)
 
@@ -208,7 +213,8 @@ func TestStrategy_NextFit_UsesCurrentBox(t *testing.T) {
 		boxpacker3.NewItem("item-3", 60, 60, 60, 1000),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Empty(t, result.UnfitItems)
 
@@ -240,7 +246,8 @@ func TestStrategy_WorstFit_SelectsWorstBox(t *testing.T) {
 		boxpacker3.NewItem("item-1", 50, 50, 50, 500),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Empty(t, result.UnfitItems)
 
@@ -280,7 +287,8 @@ func TestStrategy_AlmostWorstFit_ExcludesEmptyBoxes(t *testing.T) {
 		boxpacker3.NewItem("item-1", 30, 30, 30, 200),
 	}
 
-	result := packer.Pack(boxes, items)
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Empty(t, result.UnfitItems)
 
