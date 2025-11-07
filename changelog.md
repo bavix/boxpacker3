@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.3 - 2025-11-07
+
+### What's Changed
+
+* Refactor packing strategy handling in packInternal function by [@rez1dent3](https://github.com/rez1dent3) in https://github.com/bavix/boxpacker3/pull/31
+
+**Full Changelog**: https://github.com/bavix/boxpacker3/compare/v1.2.2...v1.2.3
+
 ## v1.2.2 - 2025-11-07
 
 ### What's Changed
