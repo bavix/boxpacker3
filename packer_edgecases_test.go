@@ -2,6 +2,7 @@ package boxpacker3_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -82,7 +83,7 @@ func TestPacker_PackCtx_ContextCancellation(t *testing.T) {
 	items := make([]*boxpacker3.Item, 1000)
 	for i := range items {
 		items[i] = boxpacker3.NewItem(
-			"item"+string(rune(i)),
+			"item"+strconv.Itoa(i),
 			float64(10+i%10),
 			float64(10+i%10),
 			float64(10+i%10),
