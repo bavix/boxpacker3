@@ -421,7 +421,7 @@ func (p *Packer) packWithNextFit(ctx context.Context, boxes boxSlice, items []*I
 
 // findWorstBox finds the box with the largest remaining space that can accommodate the item.
 // skipEmptyBoxes: if true, skips boxes that are more than 80% empty (for almost-worst-fit).
-// Returns: worstBox index, worstRemainingVolume, worstPivot.
+// Returns: worstBox index, worstPivot.
 //
 //nolint:gocognit,cyclop
 func (p *Packer) findWorstBox(item *Item, boxes boxSlice, skipEmptyBoxes bool) (int, Pivot) {
