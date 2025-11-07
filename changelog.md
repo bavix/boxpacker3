@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0 - 2025-11-07
+
+### What's Changed
+
+* Bump bavix/.github from 0.3.3 to 0.4.0 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/27
+* Bump actions/setup-go from 5 to 6 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/26
+* Bump github.com/stretchr/testify from 1.10.0 to 1.11.1 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/25
+* Bump actions/checkout from 4 to 5 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/23
+* Add benchmarking for packing strategies and enhance box/item structures by [@rez1dent3](https://github.com/rez1dent3) in https://github.com/bavix/boxpacker3/pull/28
+
+**Full Changelog**: https://github.com/bavix/boxpacker3/compare/1.1.1...1.2.0
+
 ## 1.1.1 - 2025-05-16
 
 ### What's Changed
