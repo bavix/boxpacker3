@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.2 - 2025-11-07
+
+### What's Changed
+
+* Refactor packing functions to use context support by [@rez1dent3](https://github.com/rez1dent3) in https://github.com/bavix/boxpacker3/pull/30
+
+**Full Changelog**: https://github.com/bavix/boxpacker3/compare/v1.2.1...v1.2.2
+
 ## v1.2.1 - 2025-11-07
 
 ### What's Changed
