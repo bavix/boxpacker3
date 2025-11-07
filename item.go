@@ -46,6 +46,13 @@ func NewItem(id string, w, h, d, wg float64) *Item {
 	}
 }
 
+// NewItem2D creates a new 2D item with the given parameters.
+// The depth is set to 1, making it effectively 2D (width x height).
+// This is useful for packing flat items like sheets, boards, or panels.
+func NewItem2D(id string, w, h, wg float64) *Item {
+	return NewItem(id, w, h, 1, wg)
+}
+
 func (i *Item) GetID() string {
 	return i.id
 }

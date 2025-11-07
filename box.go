@@ -56,6 +56,13 @@ func NewBox(id string, w, h, d, mw float64) *Box {
 	}
 }
 
+// NewBox2D creates a new 2D Box with the given id, dimensions, and maximum weight.
+// The depth is set to 1, making it effectively 2D (width x height).
+// This is useful for packing flat items like sheets, boards, or panels.
+func NewBox2D(id string, w, h, mw float64) *Box {
+	return NewBox(id, w, h, 1, mw)
+}
+
 func (b *Box) GetID() string {
 	return b.id
 }
