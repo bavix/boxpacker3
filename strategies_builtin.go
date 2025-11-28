@@ -171,7 +171,7 @@ func runBestFit(ctx context.Context, boxes []*Box, items []*Item) (*Result, erro
 		}
 	}
 
-	result.UnfitItems = unpacked
+	result.UnfitItems = append(result.UnfitItems, unpacked...)
 
 	return result, nil
 }
@@ -297,7 +297,7 @@ func runNextFit(ctx context.Context, boxes []*Box, items []*Item) (*Result, erro
 		}
 	}
 
-	result.UnfitItems = unpacked
+	result.UnfitItems = append(result.UnfitItems, unpacked...)
 
 	return result, nil
 }
@@ -359,7 +359,7 @@ func runWorstFit(ctx context.Context, boxes []*Box, items []*Item, skipEmpty boo
 		}
 	}
 
-	result.UnfitItems = unpacked
+	result.UnfitItems = append(result.UnfitItems, unpacked...)
 
 	return result, nil
 }
