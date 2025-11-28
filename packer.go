@@ -76,10 +76,7 @@ func (p *Packer) PackCtx(ctx context.Context, inputBoxes []*Box, inputItems []*I
 		inputItems = []*Item{}
 	}
 
-	boxes := CopySlicePtr(inputBoxes)
-	items := CopySlicePtr(inputItems)
-
-	return p.algorithm.Pack(ctx, boxes, items)
+	return p.algorithm.Pack(ctx, CopySlicePtr(inputBoxes), CopySlicePtr(inputItems))
 }
 
 // Pack packs items into boxes.

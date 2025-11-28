@@ -31,7 +31,7 @@ func TestParallel_PickBestResult(t *testing.T) {
 			boxpacker3.NewMinimizeBoxesStrategy(),
 			boxpacker3.NewBestFitStrategy(),
 		),
-		boxpacker3.WithGoal(boxpacker3.Goals.TightestPacking),
+		boxpacker3.WithGoal(boxpacker3.TightestPackingGoal),
 	)
 
 	packer := boxpacker3.NewPacker(boxpacker3.WithAlgorithm(parallelAlgo))
@@ -71,7 +71,7 @@ func TestParallel_GoalSwitching(t *testing.T) {
 	// Case 1: Standard Goal "MinimizeBoxes".
 	strat1 := boxpacker3.NewParallelStrategy(
 		boxpacker3.WithAlgorithms(algoA, algoB),
-		boxpacker3.WithGoal(boxpacker3.Goals.MinimizeBoxes),
+		boxpacker3.WithGoal(boxpacker3.MinimizeBoxesGoal),
 	)
 
 	res1, _ := strat1.Pack(context.Background(), nil, nil)

@@ -23,12 +23,12 @@ type ParallelOption func(*ParallelStrategy)
 //
 //	strategy := NewParallelStrategy(
 //	    WithAlgorithms(NewMinimizeBoxesStrategy(), NewBestFitStrategy()),
-//	    WithGoal(Goals.TightestPacking),
+//	    WithGoal(TightestPackingGoal),
 //	)
 func NewParallelStrategy(opts ...ParallelOption) *ParallelStrategy {
 	ps := &ParallelStrategy{
 		algorithms: []PackingAlgorithm{},
-		goal:       Goals.MinimizeBoxes,
+		goal:       MinimizeBoxesGoal,
 	}
 
 	for _, opt := range opts {
@@ -87,10 +87,7 @@ func (s *ParallelStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item
 				return
 			}
 
-			boxesCopy := CopySlicePtr(boxes)
-			itemsCopy := CopySlicePtr(items)
-
-			res, err := a.Pack(ctx, boxesCopy, itemsCopy)
+			res, err := a.Pack(ctx, CopySlicePtr(boxes), CopySlicePtr(items))
 			if err == nil && res != nil {
 				results <- res
 			}

@@ -77,6 +77,24 @@ For each item, finds the box with the largest remaining space that can accommoda
 ### StrategyAlmostWorstFit
 Similar to Worst Fit, but excludes boxes that are too large (almost empty). Prevents items from being placed in boxes that are nearly empty.
 
+## Parallel Strategy
+
+The library supports running multiple packing algorithms concurrently and selecting the best result using a comparator "goal" function.
+Use `NewParallelStrategy` with `WithAlgorithms` to list strategies to run and `WithGoal` to provide a comparator such as `TightestPackingGoal`.
+
+```golang
+parallel := boxpacker3.NewParallelStrategy(
+  boxpacker3.WithAlgorithms(
+    boxpacker3.NewMinimizeBoxesStrategy(),
+    boxpacker3.NewBestFitStrategy(),
+  ),
+  boxpacker3.WithGoal(boxpacker3.TightestPackingGoal),
+)
+
+packer := boxpacker3.NewPacker(boxpacker3.WithAlgorithm(parallel))
+res, err := packer.PackCtx(context.Background(), boxes, items)
+```
+
 ## Example with Strategy
 
 ```golang
