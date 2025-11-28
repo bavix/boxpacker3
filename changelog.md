@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.3.0 - 2025-11-28
+
+### What's Changed
+
+* Bump golangci/golangci-lint-action from 8 to 9 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/32
+* Bump actions/checkout from 5 to 6 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/34
+* Bump bavix/.github/.github/workflows/changelog.yml from 0.4.0 to 0.4.1 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/35
+* feat: переход к модульной архитектуре и добавлена стратегия параллельного запуска (Parallel Strategy) by [@s-starostin](https://github.com/s-starostin) in https://github.com/bavix/boxpacker3/pull/33
+* Fixes by [@rez1dent3](https://github.com/rez1dent3) in https://github.com/bavix/boxpacker3/pull/36
+
+### New Contributors
+
+* [@s-starostin](https://github.com/s-starostin) made their first contribution in https://github.com/bavix/boxpacker3/pull/33
+
+**Full Changelog**: https://github.com/bavix/boxpacker3/compare/v1.2.3...v1.3.0
+
 ## v1.2.3 - 2025-11-07
 
 ### What's Changed
