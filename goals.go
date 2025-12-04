@@ -80,12 +80,15 @@ func countUsedBoxes(boxes []*Box) int {
 	return n
 }
 
-// getUsedVolume calculates the total volume of all boxes that contain items.
+// getUsedVolume calculates the total capacity of all boxes that contain items.
 func getUsedVolume(boxes []*Box) float64 {
 	var v float64
 
 	for _, b := range boxes {
-		v += b.itemsVolume
+		// Only count boxes that actually have items in them
+		if len(b.items) > 0 {
+			v += b.volume // Use the box's volume (capacity), not itemsVolume
+		}
 	}
 
 	return v
