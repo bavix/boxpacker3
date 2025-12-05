@@ -1,13 +1,5 @@
 # Changelog
 
-## v1.3.1 - 2025-12-05
-
-### What's Changed
-
-* fix: Correction of volume calculation logic (getUsedVolume) and compositional business goals by [@s-starostin](https://github.com/s-starostin) in https://github.com/bavix/boxpacker3/pull/38
-
-**Full Changelog**: https://github.com/bavix/boxpacker3/compare/v1.3.0...v1.3.1
-
 ## v1.3.0 - 2025-11-28
 
 ### What's Changed
