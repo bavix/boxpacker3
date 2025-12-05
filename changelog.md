@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.1 - 2025-12-05
+
+### What's Changed
+
+* fix: исправление логики расчета объема (getUsedVolume) и композиционные бизнес-цели by [@s-starostin](https://github.com/s-starostin) in https://github.com/bavix/boxpacker3/pull/38
+* Revert "fix: исправление логики расчета объема (getUsedVolume) и композиционные бизнес-цели" by [@rez1dent3](https://github.com/rez1dent3) in https://github.com/bavix/boxpacker3/pull/39
+
+**Full Changelog**: https://github.com/bavix/boxpacker3/compare/v1.3.0...v1.3.1
+
 ## v1.3.0 - 2025-11-28
 
 ### What's Changed
