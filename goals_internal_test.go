@@ -7,12 +7,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// helpers for tests
+// helpers for tests.
 func makeBoxWithItems(id string, bw, bh, bd, mw float64, items ...*Item) *Box {
 	b := NewBox(id, bw, bh, bd, mw)
 	for _, it := range items {
 		b.insert(it)
 	}
+
 	return b
 }
 
@@ -21,18 +22,24 @@ func makeItem(id string, w, h, d, weight float64) *Item {
 }
 
 func TestMinimizeBoxesGoal(t *testing.T) {
+	t.Parallel()
 	t.Run("nil currentBest returns true", func(t *testing.T) {
+		t.Parallel()
+
 		cand := &Result{}
 		require.True(t, MinimizeBoxesGoal(cand, nil), "expected true when currentBest is nil")
 	})
 
 	t.Run("prefers fewer unfit items", func(t *testing.T) {
+		t.Parallel()
+
 		cand := &Result{UnfitItems: itemSlice{makeItem("a", 1, 1, 1, 1)}}
 		best := &Result{UnfitItems: itemSlice{makeItem("a", 1, 1, 1, 1), makeItem("b", 1, 1, 1, 1)}}
 		require.True(t, MinimizeBoxesGoal(cand, best), "expected candidate with fewer unfit items to win")
 	})
 
 	t.Run("tie on unfit prefers fewer boxes then smaller total volume", func(t *testing.T) {
+		t.Parallel()
 		// both have zero unfit
 		// candidate: 1 box of volume 8 (2x2x2)
 		// best: 2 boxes of volume 27 and 27 (3x3x3) but only one used -> ensure box count differs
@@ -52,11 +59,15 @@ func TestMinimizeBoxesGoal(t *testing.T) {
 }
 
 func TestMaximizeItemsGoal(t *testing.T) {
+	t.Parallel()
 	t.Run("nil currentBest returns true", func(t *testing.T) {
+		t.Parallel()
 		require.True(t, MaximizeItemsGoal(&Result{}, nil), "expected true when currentBest is nil")
 	})
 
 	t.Run("prefers fewer unfit items", func(t *testing.T) {
+		t.Parallel()
+
 		cand := &Result{UnfitItems: itemSlice{}}
 		best := &Result{UnfitItems: itemSlice{makeItem("x", 1, 1, 1, 1)}}
 		require.True(t, MaximizeItemsGoal(cand, best), "expected candidate with fewer unfit items to win")
@@ -64,7 +75,10 @@ func TestMaximizeItemsGoal(t *testing.T) {
 }
 
 func TestTightestPackingGoal(t *testing.T) {
+	t.Parallel()
 	t.Run("prefers smaller total used volume when unfit equal", func(t *testing.T) {
+		t.Parallel()
+
 		itemA := makeItem("a", 2, 2, 2, 1) // volume 8
 
 		candBox := makeBoxWithItems("b1", 2, 2, 2, 10, itemA) // used volume 8
@@ -79,7 +93,9 @@ func TestTightestPackingGoal(t *testing.T) {
 }
 
 func TestMaxAverageFillRateGoal(t *testing.T) {
+	t.Parallel()
 	t.Run("prefers higher average fill rate when unfit equal", func(t *testing.T) {
+		t.Parallel()
 		// candidate: one box, fill rate 0.8 (itemsVolume 8 / box volume 10)
 		// best: one box, fill rate 0.5 (itemsVolume 5 / box volume 10)
 		candBox := NewBox("c1", 10, 1, 1, 100) // volume 10
@@ -97,16 +113,20 @@ func TestMaxAverageFillRateGoal(t *testing.T) {
 }
 
 func TestBalancedPackingGoal(t *testing.T) {
+	t.Parallel()
 	t.Run("prefers lower weight std dev when unfit equal", func(t *testing.T) {
+		t.Parallel()
 		// candidate: two boxes with weights 5 and 5 -> stddev 0
 		// best: two boxes with weights 1 and 9 -> stddev > 0
 		c1 := NewBox("c1", 2, 2, 2, 100)
 		c2 := NewBox("c2", 2, 2, 2, 100)
+
 		c1.insert(makeItem("ci1", 1, 1, 1, 5))
 		c2.insert(makeItem("ci2", 1, 1, 1, 5))
 
 		b1 := NewBox("b1", 2, 2, 2, 100)
 		b2 := NewBox("b2", 2, 2, 2, 100)
+
 		b1.insert(makeItem("bi1", 1, 1, 1, 1))
 		b2.insert(makeItem("bi2", 1, 1, 1, 9))
 
@@ -119,11 +139,20 @@ func TestBalancedPackingGoal(t *testing.T) {
 	})
 }
 
+func TestMakeBoxWithNonDefaultMaxWeight(t *testing.T) {
+	t.Parallel()
+
+	b := makeBoxWithItems("mx", 3, 3, 3, 50)
+	require.InEpsilon(t, 50.0, b.GetMaxWeight(), 1e-9)
+}
+
 func TestMakeGoalEpsilonTolerance(t *testing.T) {
+	t.Parallel()
 	// ensure tiny differences within epsilon are treated as equal and move to next criterion
 	eps := 1e-6
 	boxA := NewBox("a", 2, 2, 2, 100)
 	boxB := NewBox("b", 2, 2, 2, 100)
+
 	boxA.insert(makeItem("i", 1, 1, 1, 1))
 	boxB.insert(makeItem("i", 1, 1, 1, 1))
 

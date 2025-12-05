@@ -11,9 +11,9 @@ type direction int
 const (
 	lessIsBetter direction = iota
 	moreIsBetter
-
-	epsilon = 0.00001
 )
+
+const epsilon = 0.00001
 
 type criterion struct {
 	metric    metricFunc
