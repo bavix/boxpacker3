@@ -4,7 +4,7 @@ type cloner interface {
 	clone() cloner
 }
 
-func CopyPtr[T any](original *T) *T {
+func clonePtr[T any](original *T) *T {
 	if original == nil {
 		return nil
 	}
@@ -20,7 +20,7 @@ func CopyPtr[T any](original *T) *T {
 	return &copyOfValue
 }
 
-func CopySlicePtr[T any](data []*T) []*T {
+func cloneSlice[T any](data []*T) []*T {
 	if data == nil {
 		return nil
 	}
@@ -28,7 +28,7 @@ func CopySlicePtr[T any](data []*T) []*T {
 	result := make([]*T, len(data))
 
 	for i, item := range data {
-		result[i] = CopyPtr(item)
+		result[i] = clonePtr(item)
 	}
 
 	return result
