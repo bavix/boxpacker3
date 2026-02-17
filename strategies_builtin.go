@@ -1,121 +1,64 @@
 package boxpacker3
 
 import (
+	"cmp"
 	"context"
-	"sort"
+	"slices"
+	"strings"
 )
 
 const (
-	// perfectFitThreshold is the threshold for considering a fit as perfect (very close to 0).
-	perfectFitThreshold = 0.01
+	perfectFitRatio = 1e-6
 )
 
-// --- MinimizeBoxesStrategy (Default / First Fit Decreasing) ---
+func compact[T any](values []*T) []*T {
+	kept := make([]*T, 0, len(values))
 
-type MinimizeBoxesStrategy struct{}
+	for _, value := range values {
+		if value != nil {
+			kept = append(kept, value)
+		}
+	}
 
-func NewMinimizeBoxesStrategy() *MinimizeBoxesStrategy { return &MinimizeBoxesStrategy{} }
-func (s *MinimizeBoxesStrategy) Name() string          { return "MinimizeBoxes" }
-
-func (s *MinimizeBoxesStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sort.Sort(sort.Reverse(itemSlice(items)))
-
-	return runFirstFit(ctx, boxes, items)
+	return kept
 }
 
-// --- GreedyStrategy (First Fit Ascending) ---
+func expandQuantities(boxes []*Container, itemCount int) []*Container {
+	expanded := make([]*Container, 0, len(boxes))
 
-type GreedyStrategy struct{}
+	for _, box := range boxes {
+		copies := min(max(box.quantity, 1), max(itemCount, 1))
 
-func NewGreedyStrategy() *GreedyStrategy { return &GreedyStrategy{} }
-func (s *GreedyStrategy) Name() string   { return "Greedy" }
+		expanded = append(expanded, box)
 
-func (s *GreedyStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sort.Sort(itemSlice(items))
+		for index := 1; index < copies; index++ {
+			copied := clonePtr(box)
+			copied.index = index
+			expanded = append(expanded, copied)
+		}
+	}
 
-	return runFirstFit(ctx, boxes, items)
+	return expanded
 }
 
-// --- BestFitStrategy (Ascending) ---
+func isPerfectFit(box *Container) bool {
+	if box == nil || box.volume <= 0 {
+		return false
+	}
 
-type BestFitStrategy struct{}
-
-func NewBestFitStrategy() *BestFitStrategy { return &BestFitStrategy{} }
-func (s *BestFitStrategy) Name() string    { return "BestFit" }
-
-func (s *BestFitStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sort.Sort(itemSlice(items))
-
-	return runBestFit(ctx, boxes, items)
+	return box.remainingVolume() < box.volume*perfectFitRatio
 }
 
-// --- BestFitDecreasingStrategy (Descending) ---
+func prepareData(inputBoxes []*Box, items []*piece, problem *Problem) ([]*Container, *Packing) {
+	boxes := expandQuantities(problem.open(compact(inputBoxes)), len(items))
 
-type BestFitDecreasingStrategy struct{}
-
-func NewBestFitDecreasingStrategy() *BestFitDecreasingStrategy { return &BestFitDecreasingStrategy{} }
-func (s *BestFitDecreasingStrategy) Name() string              { return "BestFitDecreasing" }
-
-func (s *BestFitDecreasingStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sort.Sort(sort.Reverse(itemSlice(items)))
-
-	return runBestFit(ctx, boxes, items)
-}
-
-// --- NextFitStrategy ---
-
-type NextFitStrategy struct{}
-
-func NewNextFitStrategy() *NextFitStrategy { return &NextFitStrategy{} }
-func (s *NextFitStrategy) Name() string    { return "NextFit" }
-
-func (s *NextFitStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sort.Sort(itemSlice(items))
-
-	return runNextFit(ctx, boxes, items)
-}
-
-// --- WorstFitStrategy ---
-
-type WorstFitStrategy struct{}
-
-func NewWorstFitStrategy() *WorstFitStrategy { return &WorstFitStrategy{} }
-func (s *WorstFitStrategy) Name() string     { return "WorstFit" }
-
-func (s *WorstFitStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sort.Sort(itemSlice(items))
-
-	return runWorstFit(ctx, boxes, items, false) // false = include empty boxes
-}
-
-// --- AlmostWorstFitStrategy ---
-
-type AlmostWorstFitStrategy struct{}
-
-func NewAlmostWorstFitStrategy() *AlmostWorstFitStrategy { return &AlmostWorstFitStrategy{} }
-func (s *AlmostWorstFitStrategy) Name() string           { return "AlmostWorstFit" }
-
-func (s *AlmostWorstFitStrategy) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sort.Sort(itemSlice(items))
-
-	return runWorstFit(ctx, boxes, items, true) // true = skip almost empty boxes
-}
-
-func prepareData(inputBoxes []*Box, items []*Item) (boxSlice, *Result) {
-	boxes := boxSlice(CopySlicePtr(inputBoxes))
-	sort.Sort(boxes)
+	slices.SortStableFunc(boxes, byBoxVolumeAsc)
 
 	sortedBoxes := preferredSort(boxes, items)
 
-	result := &Result{
-		UnfitItems: make(itemSlice, 0, len(items)),
-		Boxes:      sortedBoxes,
-	}
-
-	return sortedBoxes, result
+	return sortedBoxes, newPacking(sortedBoxes, make([]*piece, 0, len(items))).on(problem.boxes).by(problem)
 }
 
-// checkContext is a small helper to reduce boilerplate.
 func checkContext(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
@@ -125,8 +68,8 @@ func checkContext(ctx context.Context) error {
 	}
 }
 
-func runFirstFit(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sortedBoxes, result := prepareData(boxes, items)
+func runFirstFit(ctx context.Context, boxes []*Box, items []*piece, problem *Problem) (*Packing, error) {
+	sortedBoxes, result := prepareData(boxes, items, problem)
 	remainingItems := items
 
 	for _, box := range sortedBoxes {
@@ -139,17 +82,189 @@ func runFirstFit(ctx context.Context, boxes []*Box, items []*Item) (*Result, err
 			break
 		}
 
-		remainingItems = packToBox(ctx, box, remainingItems)
+		var errPack error
+
+		remainingItems, errPack = packToBox(ctx, box, remainingItems)
+		if errPack != nil {
+			return nil, errPack
+		}
 	}
 
-	result.UnfitItems = append(result.UnfitItems, remainingItems...)
+	result.unfit = append(result.unfit, remainingItems...)
 
 	return result, nil
 }
 
-func runBestFit(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sortedBoxes, result := prepareData(boxes, items)
-	unpacked := make([]*Item, 0, len(items))
+func runFullestBox(ctx context.Context, boxes []*Box, items []*piece, problem *Problem) (*Packing, error) {
+	sortedBoxes, result := prepareData(boxes, items, problem)
+	remaining := items
+	search := newFullestSearch(sortedBoxes)
+
+	for len(remaining) > 0 {
+		index, err := search.pick(ctx, sortedBoxes, remaining)
+		if err != nil {
+			return nil, err
+		}
+
+		if index < 0 {
+			break
+		}
+
+		before := len(remaining)
+
+		remaining, err = packToBox(ctx, sortedBoxes[index], remaining)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(remaining) == before {
+			break
+		}
+	}
+
+	result.unfit = append(result.unfit, remaining...)
+
+	return result, nil
+}
+
+type fullestSearch struct{}
+
+type boxKind struct {
+	id                     string
+	width, height, depth   float64
+	maxWeight, emptyWeight float64
+	accepts                string
+}
+
+func kindOf(box *Container) boxKind {
+	return boxKind{
+		id:          box.id,
+		width:       box.width,
+		height:      box.height,
+		depth:       box.depth,
+		maxWeight:   box.maxWeight,
+		emptyWeight: box.emptyWeight,
+		accepts:     strings.Join(box.accepts, "\x00"),
+	}
+}
+
+func newFullestSearch(_ []*Container) *fullestSearch {
+	return &fullestSearch{}
+}
+
+func (s *fullestSearch) prefer(boxes []*Container, best, candidate int, bestVolume, measured float64) bool {
+	if best < 0 {
+		return true
+	}
+
+	if sameReading(measured, bestVolume) {
+		return boxes[candidate].volume < boxes[best].volume
+	}
+
+	return measured > bestVolume
+}
+
+func (s *fullestSearch) pick(ctx context.Context, boxes []*Container, remaining []*piece) (int, error) {
+	kinds, bound := emptyKindsByBound(boxes, remaining)
+	if len(kinds) == 0 {
+		return -1, nil
+	}
+
+	if len(kinds) == 1 {
+		return kinds[0], nil
+	}
+
+	best, bestVolume := -1, 0.0
+
+	for position, i := range kinds {
+		err := checkContext(ctx)
+		if err != nil {
+			return -1, err
+		}
+
+		measured, err := s.measure(ctx, boxes[i], remaining)
+		if err != nil {
+			return -1, err
+		}
+
+		if measured > 0 && s.prefer(boxes, best, i, bestVolume, measured) {
+			best, bestVolume = i, measured
+		}
+
+		if position+1 >= len(kinds) || bestVolume > bound[position+1] {
+			break
+		}
+	}
+
+	return best, nil
+}
+
+func (s *fullestSearch) measure(ctx context.Context, box *Container, remaining []*piece) (float64, error) {
+	trial := clonePtr(box)
+	trial.reset()
+
+	placements := snapshot(remaining)
+
+	_, err := ordinaryFill(ctx, trial, remaining)
+	restore(remaining, placements)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return trial.itemsVolume, nil
+}
+
+func holdableVolume(box *Container, remaining []*piece) float64 {
+	volume := 0.0
+
+	for _, item := range remaining {
+		if item != nil && box.couldEverHold(item) {
+			volume += item.volume
+		}
+	}
+
+	return min(volume, box.volume)
+}
+
+func emptyKindsByBound(boxes []*Container, remaining []*piece) ([]int, []float64) {
+	seen := make(map[boxKind]bool, len(boxes))
+	kinds := make([]int, 0, len(boxes))
+	bound := make(map[int]float64, len(boxes))
+
+	for i, box := range boxes {
+		if box == nil || len(box.items) > 0 || seen[kindOf(box)] {
+			continue
+		}
+
+		seen[kindOf(box)] = true
+		bound[i] = holdableVolume(box, remaining)
+
+		kinds = append(kinds, i)
+	}
+
+	slices.SortStableFunc(kinds, func(a, b int) int {
+		return cmp.Compare(bound[b], bound[a])
+	})
+
+	bounds := make([]float64, 0, len(kinds))
+	for _, i := range kinds {
+		bounds = append(bounds, bound[i])
+	}
+
+	return kinds, bounds
+}
+
+func runItemMajor(
+	ctx context.Context,
+	boxes []*Box,
+	items []*piece,
+	problem *Problem,
+	selection BoxSelection,
+) (*Packing, error) {
+	sortedBoxes, result := prepareData(boxes, items, problem)
+	unpacked := make([]*piece, 0, len(items))
+	window := 0
 
 	for _, item := range items {
 		err := checkContext(ctx)
@@ -161,298 +276,454 @@ func runBestFit(ctx context.Context, boxes []*Box, items []*Item) (*Result, erro
 			continue
 		}
 
-		bestBoxIndex, bestPivot := findBestBoxForItem(sortedBoxes, item)
-
-		if bestBoxIndex >= 0 {
-			box := sortedBoxes[bestBoxIndex]
-			box.PutItem(item, bestPivot)
-		} else {
+		choice, found := selectBox(sortedBoxes[window:], item, selection)
+		if !found {
 			unpacked = append(unpacked, item)
+
+			continue
+		}
+
+		index := window + choice.index
+		sortedBoxes[index].place(item, choice.pivot, choice.rotation)
+
+		if selection == SelectNextFit {
+			window = index
 		}
 	}
 
-	result.UnfitItems = append(result.UnfitItems, unpacked...)
+	unpacked, err := recoverGaps(ctx, sortedBoxes, unpacked, selection, window)
+	if err != nil {
+		return nil, err
+	}
+
+	result.unfit = append(result.unfit, unpacked...)
 
 	return result, nil
 }
 
-// findBestBoxForItem iterates all boxes to find the tightest fit for a single item.
-func findBestBoxForItem(boxes []*Box, item *Item) (int, Pivot) {
-	bestBox := -1
-	bestRemainingVolume := -1.0
-	bestPivot := Pivot{}
+const gapRecoveryBudget = 24
+
+func recoverGaps(
+	ctx context.Context,
+	boxes []*Container,
+	unpacked []*piece,
+	selection BoxSelection,
+	window int,
+) ([]*piece, error) {
+	if len(unpacked) == 0 {
+		return unpacked, nil
+	}
+
+	start := 0
+	if selection == SelectNextFit {
+		start = window
+	}
+
+	for i := start; i < len(boxes) && len(unpacked) > 0; i++ {
+		if boxes[i] == nil || len(boxes[i].items) == 0 {
+			continue
+		}
+
+		head, tail := unpacked, []*piece(nil)
+		if len(head) > gapRecoveryBudget {
+			head, tail = unpacked[:gapRecoveryBudget], unpacked[gapRecoveryBudget:]
+		}
+
+		recovered, err := fillGaps(ctx, boxes[i], head, true)
+
+		stillUnpacked := make([]*piece, 0, len(recovered)+len(tail))
+		stillUnpacked = append(stillUnpacked, recovered...)
+		stillUnpacked = append(stillUnpacked, tail...)
+
+		if err != nil {
+			return stillUnpacked, err
+		}
+
+		unpacked = stillUnpacked
+	}
+
+	return unpacked, nil
+}
+
+type boxChoice struct {
+	index     int
+	pivot     Pivot
+	rotation  Orientation
+	remaining float64
+	open      bool
+}
+
+func candidateBoxes(boxes []*Container, item *piece) []boxChoice {
+	choices := make([]boxChoice, 0, len(boxes))
 
 	for i, box := range boxes {
 		if box == nil || !box.canQuota(item) {
 			continue
 		}
 
-		pivot, found, perfect := evaluateBoxForBestFit(box, item)
+		pivot, rotation, found := bestPlacement(box, item)
 		if !found {
 			continue
 		}
 
-		rem := getVolumeAfterPlacement(box, item, pivot)
+		choices = append(choices, boxChoice{
+			index:     i,
+			pivot:     pivot,
+			rotation:  rotation,
+			remaining: box.remainingVolume() - item.volume,
+			open:      len(box.items) > 0,
+		})
+	}
 
-		if bestBox == -1 || rem < bestRemainingVolume {
-			bestBox = i
-			bestRemainingVolume = rem
+	return choices
+}
 
-			bestPivot = pivot
-			if perfect {
-				return bestBox, bestPivot
-			}
+func openFirst(choices []boxChoice) []boxChoice {
+	opened := make([]boxChoice, 0, len(choices))
+
+	for _, choice := range choices {
+		if choice.open {
+			opened = append(opened, choice)
 		}
 	}
 
-	return bestBox, bestPivot
-}
-
-func getVolumeAfterPlacement(box *Box, item *Item, pivot Pivot) float64 {
-	testBox := CopyPtr(box)
-	testBox.PutItem(item, pivot)
-
-	return testBox.GetRemainingVolume()
-}
-
-// evaluateBoxForBestFit checks if an item fits in a box (empty or relative)
-// and returns the pivot, success bool, and if it was a "perfect" fit.
-func evaluateBoxForBestFit(box *Box, item *Item) (Pivot, bool, bool) {
-	testBox := CopyPtr(box)
-	if testBox.PutItem(item, Pivot{}) {
-		if testBox.GetRemainingVolume() < perfectFitThreshold {
-			return Pivot{}, true, true
-		}
-
-		return Pivot{}, true, false
+	if len(opened) > 0 {
+		return opened
 	}
 
-	return tryPlaceItemInBox(box, item)
+	return choices
 }
 
-// tryPlaceItemInBox attempts to place an item relative to existing items in the box.
-func tryPlaceItemInBox(box *Box, item *Item) (Pivot, bool, bool) {
-	for j := range box.items {
-		itemPos := box.items[j].position
-		dimension := box.items[j].GetDimension()
-
-		for _, axis := range []Axis{WidthAxis, HeightAxis, DepthAxis} {
-			pv := Pivot{itemPos[WidthAxis], itemPos[HeightAxis], itemPos[DepthAxis]}
-			pv[axis] += dimension[axis]
-
-			testBox := CopyPtr(box)
-			if testBox.PutItem(item, pv) {
-				if testBox.GetRemainingVolume() < perfectFitThreshold {
-					return pv, true, true
-				}
-
-				return pv, true, false
-			}
-		}
+func selectBox(boxes []*Container, item *piece, selection BoxSelection) (boxChoice, bool) {
+	choices := candidateBoxes(boxes, item)
+	if len(choices) == 0 {
+		return boxChoice{
+			index: -1, pivot: Pivot{}, rotation: OrientationWHD, remaining: 0, open: false,
+		}, false
 	}
 
-	return Pivot{}, false, false
-}
+	switch selection {
+	case SelectBestFit:
+		return rankedByRemaining(openFirst(choices), true, 0), true
+	case SelectWorstFit:
+		return rankedByRemaining(openFirst(choices), false, 0), true
+	case SelectAlmostWorstFit:
+		return rankedByRemaining(openFirst(choices), false, 1), true
 
-func runNextFit(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
-	sortedBoxes, result := prepareData(boxes, items)
-	unpacked := make([]*Item, 0, len(items))
-	currentBoxIndex := 0
-
-	for _, item := range items {
-		err := checkContext(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if item == nil {
-			continue
-		}
-
-		fitted := false
-
-		if currentBoxIndex < len(sortedBoxes) {
-			box := sortedBoxes[currentBoxIndex]
-			if fitInSpecificBox(box, item) {
-				fitted = true
-			} else {
-				currentBoxIndex++
-			}
-		}
-
-		if !fitted {
-			for i := currentBoxIndex; i < len(sortedBoxes); i++ {
-				box := sortedBoxes[i]
-				if fitInSpecificBox(box, item) {
-					fitted = true
-					currentBoxIndex = i
-
-					break
-				}
-			}
-		}
-
-		if !fitted {
-			unpacked = append(unpacked, item)
-		}
+	case SelectFirstFit, SelectNextFit, SelectFullestBox:
 	}
 
-	result.UnfitItems = append(result.UnfitItems, unpacked...)
-
-	return result, nil
+	return choices[0], true
 }
 
-// fitInSpecificBox tries to put an item into a specific box (empty or relative).
-// It modifies the box in place if successful.
-func fitInSpecificBox(box *Box, item *Item) bool {
-	if box == nil || !box.canQuota(item) {
+func rankedByRemaining(choices []boxChoice, ascending bool, skip int) boxChoice {
+	slices.SortStableFunc(choices, func(a, b boxChoice) int {
+		if ascending {
+			return cmp.Compare(a.remaining, b.remaining)
+		}
+
+		return cmp.Compare(b.remaining, a.remaining)
+	})
+
+	return choices[min(skip, len(choices)-1)]
+}
+
+func fitInSpecificBox(box *Container, item *piece) bool {
+	if box == nil || item == nil || !box.canQuota(item) {
 		return false
 	}
 
-	if box.PutItem(item, Pivot{}) {
-		return true
+	position, rotation, ok := bestPlacement(box, item)
+	if !ok {
+		return false
 	}
 
-	for j := range box.items {
-		itemPos := box.items[j].position
-		dimension := box.items[j].GetDimension()
+	box.place(item, position, rotation)
 
-		for _, axis := range []Axis{WidthAxis, HeightAxis, DepthAxis} {
-			pv := Pivot{itemPos[WidthAxis], itemPos[HeightAxis], itemPos[DepthAxis]}
-
-			pv[axis] += dimension[axis]
-			if box.PutItem(item, pv) {
-				return true
-			}
-		}
-	}
-
-	return false
+	return true
 }
 
-func runWorstFit(ctx context.Context, boxes []*Box, items []*Item, skipEmpty bool) (*Result, error) {
-	sortedBoxes, result := prepareData(boxes, items)
-	unpacked := make([]*Item, 0, len(items))
+func preferredSort(boxes []*Container, items []*piece) []*Container {
+	index, found := wholeOrderBox(boxes, items)
+	if !found {
+		return boxes
+	}
+
+	result := make([]*Container, 0, len(boxes))
+	result = append(result, boxes[index])
+
+	for j, box := range boxes {
+		if j != index {
+			result = append(result, box)
+		}
+	}
+
+	return result
+}
+
+type orderBounds struct {
+	volume    float64
+	weight    float64
+	maxLength float64
+}
+
+func boundsOf(items []*piece) orderBounds {
+	var bounds orderBounds
 
 	for _, item := range items {
-		err := checkContext(ctx)
-		if err != nil {
-			return nil, err
+		bounds.volume += item.volume
+		bounds.weight += item.weight
+		bounds.maxLength = max(bounds.maxLength, item.maxLength)
+	}
+
+	return bounds
+}
+
+func shippableItems(boxes []*Container, items []*piece) []*piece {
+	shippable := make([]*piece, 0, len(items))
+
+	for _, item := range items {
+		if item != nil && !fitsNoBoxHere(item, boxes) {
+			shippable = append(shippable, item)
+		}
+	}
+
+	return shippable
+}
+
+func wholeOrderBox(boxes []*Container, items []*piece) (int, bool) {
+	shippable := shippableItems(boxes, items)
+	if len(shippable) == 0 {
+		return 0, false
+	}
+
+	bounds := boundsOf(shippable)
+
+	for i, b := range boxes {
+		if b == nil || b.volume < bounds.volume ||
+			b.maxWeight < bounds.weight || b.maxLength < bounds.maxLength {
+			continue
 		}
 
+		if holdsWholeOrder(b, shippable) {
+			return i, true
+		}
+	}
+
+	return 0, false
+}
+
+func holdsWholeOrder(b *Container, items []*piece) bool {
+	trial := clonePtr(b)
+	trial.reset()
+
+	defer restore(items, snapshot(items))
+
+	for _, item := range items {
 		if item == nil {
 			continue
 		}
 
-		// Find worst box
-		worstBox, worstPivot := findWorstBox(item, sortedBoxes, skipEmpty)
-
-		if worstBox == -1 && skipEmpty {
-			worstBox, worstPivot = findWorstBox(item, sortedBoxes, false)
+		if !fitInSpecificBox(trial, item) {
+			return false
 		}
+	}
 
-		if worstBox >= 0 {
-			box := sortedBoxes[worstBox]
-			box.PutItem(item, worstPivot)
-		} else {
+	return true
+}
+
+func packToBox(ctx context.Context, b *Container, items []*piece) ([]*piece, error) {
+	if b.rules.Filler != nil {
+		return fillThrough(ctx, b.rules.Filler, b, items)
+	}
+
+	return ordinaryFill(ctx, b, items)
+}
+
+func fillThrough(ctx context.Context, filler Filler, b *Container, items []*piece) ([]*piece, error) {
+	byInstance := make(map[Instance]*piece, len(items))
+	offered := make([]Instance, 0, len(items))
+
+	for _, item := range items {
+		instance := Instance{Item: item.Item, Index: item.index}
+		byInstance[instance] = item
+		offered = append(offered, instance)
+	}
+
+	left, err := filler.Fill(ctx, b, offered)
+	if err != nil {
+		return items, err
+	}
+
+	unpacked := make([]*piece, 0, len(left))
+
+	for _, instance := range left {
+		if item, known := byInstance[instance]; known {
 			unpacked = append(unpacked, item)
 		}
 	}
 
-	result.UnfitItems = append(result.UnfitItems, unpacked...)
-
-	return result, nil
+	return unpacked, nil
 }
 
-func findWorstBox(item *Item, boxes boxSlice, skipEmptyBoxes bool) (int, Pivot) {
-	worstBox := -1
-	worstRemainingVolume := -1.0
-	worstPivot := Pivot{}
+func ordinaryFill(ctx context.Context, b *Container, items []*piece) ([]*piece, error) {
+	unpacked, err := fillBox(ctx, b, items)
+	if err != nil || len(unpacked) == 0 || len(b.items) == 0 {
+		return unpacked, err
+	}
 
-	for i, box := range boxes {
-		if box == nil || !box.canQuota(item) {
-			continue
-		}
+	best, err := bestSeededFill(ctx, b, items)
+	if err != nil {
+		return unpacked, err
+	}
 
-		if skipEmptyBoxes {
-			if box.GetRemainingVolume() > box.GetVolume()*0.8 {
+	if best != nil && best.volume > b.itemsVolume {
+		unpacked = best.applyTo(b, items)
+	}
+
+	return fillGaps(ctx, b, unpacked, false)
+}
+
+func fillGaps(ctx context.Context, b *Container, items []*piece, repack bool) ([]*piece, error) {
+	remaining := items
+
+	for len(remaining) > 0 {
+		next := make([]*piece, 0, len(remaining))
+		progress := false
+
+		for i, item := range remaining {
+			err := checkContext(ctx)
+			if err != nil {
+				return appendRest(next, remaining, i), err
+			}
+
+			if packItem(b, item, repack) {
+				progress = true
+
 				continue
 			}
+
+			next = append(next, item)
 		}
 
-		pivot, found, _ := evaluateBoxForBestFit(box, item)
-		if found {
-			rem := getVolumeAfterPlacement(box, item, pivot)
-			if worstBox == -1 || rem > worstRemainingVolume {
-				worstBox = i
-				worstRemainingVolume = rem
-				worstPivot = pivot
-			}
+		remaining = next
+
+		if !progress {
+			break
 		}
 	}
 
-	return worstBox, worstPivot
+	return remaining, nil
 }
 
-func preferredSort(boxes boxSlice, items itemSlice) boxSlice {
-	var volume, weight, maxLength float64
-
-	for _, item := range items {
-		if item == nil {
-			continue
-		}
-
-		volume += item.GetVolume()
-		weight += item.GetWeight()
-		maxLength = max(maxLength, item.maxLength)
-	}
-
-	for i, b := range boxes {
-		if b == nil {
-			continue
-		}
-
-		if b.volume >= volume && b.maxWeight >= weight && b.maxLength >= maxLength {
-			result := make(boxSlice, 0, len(boxes))
-			result = append(result, b)
-
-			for j, box := range boxes {
-				if j != i {
-					result = append(result, box)
-				}
-			}
-
-			return result
-		}
-	}
-
-	return boxes
+func fillBox(ctx context.Context, b *Container, items []*piece) ([]*piece, error) {
+	return fillBoxWith(ctx, b, items, true)
 }
 
-// packToBox Packs goods in a box b. Returns unpackaged goods.
-func packToBox(ctx context.Context, b *Box, items []*Item) []*Item {
-	unpacked := make([]*Item, 0, len(items))
-	index := 0
+func fillBoxWith(ctx context.Context, b *Container, items []*piece, repack bool) ([]*piece, error) {
+	unpacked := make([]*piece, 0, len(items))
 
-	if b.items == nil && len(items) > 0 && b.PutItem(items[index], Pivot{}) {
-		index++
-	}
-
-	for i := index; i < len(items); i++ {
+	for i := range items {
 		err := checkContext(ctx)
 		if err != nil {
-			return appendRest(unpacked, items, i)
+			return appendRest(unpacked, items, i), err
 		}
 
-		if !packSingleItem(b, items[i]) {
+		if !packItem(b, items[i], repack) {
 			unpacked = append(unpacked, items[i])
 		}
+	}
+
+	return unpacked, nil
+}
+
+type seededFill struct {
+	placed   []bool
+	position []Pivot
+	rotation []Orientation
+	volume   float64
+}
+
+func (f *seededFill) applyTo(b *Container, items []*piece) []*piece {
+	b.reset()
+
+	unpacked := make([]*piece, 0, len(items))
+
+	for i, item := range items {
+		if !f.placed[i] {
+			unpacked = append(unpacked, item)
+
+			continue
+		}
+
+		b.place(item, f.position[i], f.rotation[i])
 	}
 
 	return unpacked
 }
 
-func appendRest(unpacked []*Item, items []*Item, startIndex int) []*Item {
+func bestSeededFill(ctx context.Context, b *Container, items []*piece) (*seededFill, error) {
+	var best *seededFill
+
+	for _, rotation := range items[0].rotations {
+		trial, err := seededFillAttempt(ctx, b, items, rotation)
+		if err != nil {
+			return nil, err
+		}
+
+		if trial != nil && (best == nil || trial.volume > best.volume) {
+			best = trial
+		}
+	}
+
+	return best, nil
+}
+
+func seededFillAttempt(ctx context.Context, b *Container, items []*piece, seed Orientation) (*seededFill, error) {
+	trialBox := clonePtr(b)
+	trialBox.reset()
+
+	trialItems := cloneSlice(items)
+
+	first := trialItems[0]
+	allowUnstable := !trialBox.hasStableOrientation(first)
+
+	if !trialBox.canQuota(first) ||
+		!trialBox.acceptsPlacement(first, Pivot{}, rotatedDimension(first.Item, seed), allowUnstable) {
+		return nil, nil //nolint:nilnil
+	}
+
+	trialBox.place(trialItems[0], Pivot{}, seed)
+
+	_, err := fillBoxWith(ctx, trialBox, trialItems[1:], false)
+	if err != nil {
+		return nil, err
+	}
+
+	fill := &seededFill{
+		placed:   make([]bool, len(items)),
+		position: make([]Pivot, len(items)),
+		rotation: make([]Orientation, len(items)),
+		volume:   trialBox.itemsVolume,
+	}
+
+	inBox := make(map[*piece]bool, len(trialBox.items))
+	for _, item := range trialBox.items {
+		inBox[item] = true
+	}
+
+	for i, item := range trialItems {
+		if inBox[item] {
+			fill.placed[i] = true
+			fill.position[i] = item.position
+			fill.rotation[i] = item.orientation
+		}
+	}
+
+	return fill, nil
+}
+
+func appendRest(unpacked []*piece, items []*piece, startIndex int) []*piece {
 	for j := startIndex; j < len(items); j++ {
 		if items[j] != nil {
 			unpacked = append(unpacked, items[j])
@@ -462,52 +733,77 @@ func appendRest(unpacked []*Item, items []*Item, startIndex int) []*Item {
 	return unpacked
 }
 
-func packSingleItem(b *Box, item *Item) bool {
+func packItem(b *Container, item *piece, repack bool) bool {
 	if item == nil {
 		return false
 	}
 
-	// 1. Try Simple Pack (Append to existing layout)
 	if fitInSpecificBox(b, item) {
 		return true
 	}
 
-	// 2. Try Repacking (Brute force shuffle)
-	// Only attempt if the item technically meets quota but failed geometry,
-	// and if there are existing items to reshuffle.
-	if b.canQuota(item) && len(b.items) > 0 {
+	if repack && b.canQuota(item) && len(b.items) > 0 {
 		return attemptRepack(b, item)
 	}
 
 	return false
 }
 
-// attemptRepack tries to reshuffle the box to fit the new item.
-func attemptRepack(b *Box, newItem *Item) bool {
-	backup := CopyPtr(b)
-	copyItems := CopySlicePtr(b.items)
+type placement struct {
+	position Pivot
+	rotation Orientation
+}
 
-	backup.Reset()
+func snapshot(items []*piece) []placement {
+	saved := make([]placement, len(items))
 
-	if !backup.PutItem(newItem, Pivot{}) {
+	for i, item := range items {
+		saved[i] = placement{position: item.position, rotation: item.orientation}
+	}
+
+	return saved
+}
+
+func restore(items []*piece, saved []placement) {
+	for i, item := range items {
+		item.position = saved[i].position
+		item.orientation = saved[i].rotation
+	}
+}
+
+func attemptRepack(b *Container, newItem *piece) bool {
+	state := saveContainer(b)
+	newItemPlacement := snapshot([]*piece{newItem})
+
+	b.reset()
+
+	if !fitInSpecificBox(b, newItem) {
+		restore([]*piece{newItem}, newItemPlacement)
+		state.rollback()
+
 		return false
 	}
 
-	itemsFit := 0
+	for _, item := range state.items {
+		if fitInSpecificBox(b, item) {
+			continue
+		}
 
-	for _, originalItem := range copyItems {
-		if fitInSpecificBox(backup, originalItem) {
-			itemsFit++
-		} else {
-			break
+		restore([]*piece{newItem}, newItemPlacement)
+		state.rollback()
+
+		return false
+	}
+
+	return true
+}
+
+func fitsNoBoxHere(item *piece, boxes []*Container) bool {
+	for _, box := range boxes {
+		if box != nil && box.couldEverHold(item) {
+			return false
 		}
 	}
 
-	if itemsFit == len(copyItems) {
-		*b = *backup
-
-		return true
-	}
-
-	return false
+	return true
 }
