@@ -2,85 +2,35 @@ package boxpacker3
 
 import "testing"
 
-func benchResults() (*Result, *Result) {
-	it := NewItem("i1", 2, 2, 2, 1)
-	candBox := makeBoxWithItems("cb", 3, 3, 3, 100, it)
-	bestBox := makeBoxWithItems("bb", 4, 4, 4, 100, it)
+func benchmarkGoal(b *testing.B, goal Goal) {
+	b.Helper()
 
-	cand := &Result{UnfitItems: itemSlice{}, Boxes: boxSlice{candBox}}
-	best := &Result{UnfitItems: itemSlice{}, Boxes: boxSlice{bestBox}}
+	item := makeItem("i", 1, 1, 1, 1)
+	candBox := makeBoxWithItems("cb", 2, 2, 2, 100, item)
+	bestBox := makeBoxWithItems("bb", 4, 4, 4, 100, item)
 
-	return cand, best
-}
+	cand := resultOf([]*Container{candBox})
+	best := resultOf([]*Container{bestBox})
 
-func BenchmarkMinimizeBoxesGoal_Call(b *testing.B) {
-	cand, best := benchResults()
-
-	b.ReportAllocs()
 	b.ResetTimer()
 
 	for range b.N {
-		MinimizeBoxesGoal(cand, best)
+		_ = goal.Compare(cand, best)
 	}
 }
 
-func BenchmarkMinimizeBoxesGoal_Closure(b *testing.B) {
-	// benchmark calling the comparator closure directly (avoids recreate of closure each call)
-	comp := makeGoal(
-		criterion{unfitCountMetric, lessIsBetter},
-		criterion{boxCountMetric, lessIsBetter},
-		criterion{totalVolumeMetric, lessIsBetter},
+func BenchmarkGoal_FewestBoxes(b *testing.B)    { benchmarkGoal(b, FewestBoxes) }
+func BenchmarkGoal_MostItems(b *testing.B)      { benchmarkGoal(b, MostItems) }
+func BenchmarkGoal_LeastVolume(b *testing.B)    { benchmarkGoal(b, LeastVolume) }
+func BenchmarkGoal_HighestFill(b *testing.B)    { benchmarkGoal(b, HighestFill) }
+func BenchmarkGoal_BalancedWeight(b *testing.B) { benchmarkGoal(b, BalancedWeight) }
+
+func BenchmarkGoal_Lexicographic(b *testing.B) {
+	goal := Lexicographic("bench",
+		Criterion{Name: "unpacked", Measure: unpackedCount, Higher: false},
+		Criterion{Name: "boxes", Measure: boxCount, Higher: false},
+		Criterion{Name: "box volume", Measure: boxVolume, Higher: false},
 	)
-	cand, best := benchResults()
 
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for range b.N {
-		comp(cand, best)
-	}
-}
-
-func BenchmarkMaximizeItemsGoal(b *testing.B) {
-	cand, best := benchResults()
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for range b.N {
-		MaximizeItemsGoal(cand, best)
-	}
-}
-
-func BenchmarkTightestPackingGoal(b *testing.B) {
-	cand, best := benchResults()
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for range b.N {
-		TightestPackingGoal(cand, best)
-	}
-}
-
-func BenchmarkMaxAverageFillRateGoal(b *testing.B) {
-	cand, best := benchResults()
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for range b.N {
-		MaxAverageFillRateGoal(cand, best)
-	}
-}
-
-func BenchmarkBalancedPackingGoal(b *testing.B) {
-	cand, best := benchResults()
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for range b.N {
-		BalancedPackingGoal(cand, best)
-	}
+	benchmarkGoal(b, goal)
 }
