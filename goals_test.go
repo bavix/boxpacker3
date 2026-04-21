@@ -1,103 +1,91 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bavix/boxpacker3"
+	"github.com/bavix/boxpacker3/v2"
 )
 
 func TestGoals_ConflictScenarios(t *testing.T) {
 	t.Parallel()
 
-	// A: 1 Huge Box (100L capacity).
-	//   - Items inside take 10L.
-	//   - Fill rate: 10%.
-	//   - Total Volume: 100L.
-	//   - Box Count: 1.
-	//
-	// B: 2 Small Boxes (10L capacity each).
-	//   - Items inside take 10L (5L per box).
-	//   - Fill rate: 50% per box.
-	//   - Total Volume: 20L.
-	//   - Box Count: 2.
-
 	resA := &boxpacker3.Result{
-		Boxes: []*boxpacker3.Box{
+		Boxes: []boxpacker3.PackedBox{
 			makeBoxWithProps(100, 10, 10),
 		},
-		UnfitItems: []*boxpacker3.Item{},
+		Unpacked: nil,
 	}
 
 	resB := &boxpacker3.Result{
-		Boxes: []*boxpacker3.Box{
+		Boxes: []boxpacker3.PackedBox{
 			makeBoxWithProps(10, 5, 5),
 			makeBoxWithProps(10, 5, 5),
 		},
-		UnfitItems: []*boxpacker3.Item{},
+		Unpacked: nil,
 	}
 
-	// MinimizeBoxes should prefer A (1 box < 2 boxes).
-	require.True(t, boxpacker3.MinimizeBoxesGoal(resA, resB),
+	require.Negative(t, boxpacker3.FewestBoxes.Compare(resA, resB),
 		"MinimizeBoxes should prefer 1 huge box over 2 small ones")
 
-	// TightestPacking should prefer B (20L total volume < 100L total volume).
-	require.True(t, boxpacker3.TightestPackingGoal(resB, resA),
+	require.Negative(t, boxpacker3.LeastVolume.Compare(resB, resA),
 		"TightestPacking should prefer 2 small boxes (20L) over 1 huge box (100L)")
 
-	// MaxAverageFillRate should prefer B (50% fill vs 10% fill).
-	require.True(t, boxpacker3.MaxAverageFillRateGoal(resB, resA),
+	require.Negative(t, boxpacker3.HighestFill.Compare(resB, resA),
 		"MaxAverageFillRate should prefer higher density")
 }
 
 func TestGoals_BalancedPacking(t *testing.T) {
 	t.Parallel()
 
-	// Candidate A: Balanced (10kg, 10kg). StdDev = 0.
 	resA := &boxpacker3.Result{
-		Boxes: []*boxpacker3.Box{
-			makeBoxWithProps(20, 10, 10), // 10 kg
-			makeBoxWithProps(20, 10, 10), // 10 kg
+		Boxes: []boxpacker3.PackedBox{
+			makeBoxWithProps(20, 10, 10),
+			makeBoxWithProps(20, 10, 10),
 		},
+		Unpacked: nil,
 	}
 
-	// Candidate B: Unbalanced (1kg, 19kg). High StdDev.
 	resB := &boxpacker3.Result{
-		Boxes: []*boxpacker3.Box{
-			makeBoxWithProps(20, 10, 1),  // 1 kg
-			makeBoxWithProps(20, 10, 19), // 19 kg
+		Boxes: []boxpacker3.PackedBox{
+			makeBoxWithProps(20, 10, 1),
+			makeBoxWithProps(20, 10, 19),
 		},
+		Unpacked: nil,
 	}
 
-	require.True(t, boxpacker3.BalancedPackingGoal(resA, resB),
+	require.Negative(t, boxpacker3.BalancedWeight.Compare(resA, resB),
 		"BalancedPacking should prefer equal weights")
 }
 
 func TestGoals_TieBreaker(t *testing.T) {
 	t.Parallel()
 
-	// Both use 1 box.
-	// A is smaller (10L). B is larger (20L).
-	resA := &boxpacker3.Result{Boxes: []*boxpacker3.Box{makeBoxWithProps(10, 5, 5)}}
-	resB := &boxpacker3.Result{Boxes: []*boxpacker3.Box{makeBoxWithProps(20, 5, 5)}}
+	resA := &boxpacker3.Result{
+		Boxes:    []boxpacker3.PackedBox{makeBoxWithProps(10, 5, 5)},
+		Unpacked: nil,
+	}
+	resB := &boxpacker3.Result{
+		Boxes:    []boxpacker3.PackedBox{makeBoxWithProps(20, 5, 5)},
+		Unpacked: nil,
+	}
 
-	// MinimizeBoxes should fall back to volume check if counts are equal
-	require.True(t, boxpacker3.MinimizeBoxesGoal(resA, resB),
+	require.Negative(t, boxpacker3.FewestBoxes.Compare(resA, resB),
 		"MinimizeBoxes should prefer smaller volume if box counts are equal")
 }
 
-// makeBoxWithProps creates a real Box struct and populates it with an item
-// to simulate volume and weight usage for testing goals.
-func makeBoxWithProps(volume, itemsVolume, itemsWeight float64) *boxpacker3.Box {
-	// Create a box with W=volume, H=1, D=1 => Volume = volume
+func makeBoxWithProps(volume, itemsVolume, itemsWeight float64) boxpacker3.PackedBox {
 	b := boxpacker3.NewBox("mock", volume, 1, 1, 1000)
 
-	// Create an item with matching props to populate the box stats
 	item := boxpacker3.NewItem("mock-item", itemsVolume, 1, 1, itemsWeight)
 
-	// PutItem updates internal itemsVolume and itemsWeight
-	b.PutItem(item, boxpacker3.Pivot{})
+	result, err := boxpacker3.NewPacker().Pack(
+		context.Background(), []*boxpacker3.Box{b}, []*boxpacker3.Item{item})
+	if err != nil || len(result.Boxes) == 0 {
+		panic("the mock item must pack")
+	}
 
-	return b
+	return result.Boxes[0]
 }
