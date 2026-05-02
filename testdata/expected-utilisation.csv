@@ -1,0 +1,25 @@
+#settings,instances=100 merit=contact-first spaces=extreme-points
+br1.txt/BestFitDecreasing,0.8291
+br1.txt/FirstFitDecreasing,0.8495
+br1.txt/FirstFitDecreasing+support,0.8074
+br2.txt/BestFitDecreasing,0.8362
+br2.txt/FirstFitDecreasing,0.8506
+br2.txt/FirstFitDecreasing+support,0.7934
+br3.txt/BestFitDecreasing,0.8399
+br3.txt/FirstFitDecreasing,0.8552
+br3.txt/FirstFitDecreasing+support,0.7913
+br4.txt/BestFitDecreasing,0.8410
+br4.txt/FirstFitDecreasing,0.8573
+br4.txt/FirstFitDecreasing+support,0.7869
+br5.txt/BestFitDecreasing,0.8372
+br5.txt/FirstFitDecreasing,0.8545
+br5.txt/FirstFitDecreasing+support,0.7855
+br6.txt/BestFitDecreasing,0.8362
+br6.txt/FirstFitDecreasing,0.8539
+br6.txt/FirstFitDecreasing+support,0.7785
+br7.txt/BestFitDecreasing,0.8357
+br7.txt/FirstFitDecreasing,0.8529
+br7.txt/FirstFitDecreasing+support,0.7724
+loh-nee.txt/BestFitDecreasing,0.6936
+loh-nee.txt/FirstFitDecreasing,0.6956
+loh-nee.txt/FirstFitDecreasing+support,0.6606
