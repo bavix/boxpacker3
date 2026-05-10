@@ -1,13 +1,13 @@
 # boxpacker3
 
-A 3D and 2D bin packing library in golang.
+3D and 2D bin packing library for Go.
 
 ## Usage
 
-```golang
+```go
 import (
   "context"
-  "github.com/bavix/boxpacker3"
+  "github.com/bavix/boxpacker3/v2"
 )
 
 packer := boxpacker3.NewPacker()
@@ -18,92 +18,41 @@ boxes := []*boxpacker3.Box{
 items := []*boxpacker3.Item{
   boxpacker3.NewItem("product 1", 100, 100, 5, 2690),
   boxpacker3.NewItem("product 2", 100, 5, 100, 2690),
-  boxpacker3.NewItem("product 3", 5, 100, 100, 2690),
 }
 
-packResult, err := packer.PackCtx(context.Background(), boxes, items)
-if err != nil {
-  // handle error
-}
-fmt.Println(packResult.Boxes) // boxes and items
-fmt.Println(packResult.UnfitItems) // Items that didn't fit in boxes
+result, err := packer.Pack(context.Background(), boxes, items)
 ```
 
-## 2D Packing
+## Result
 
-The library also supports 2D packing for flat items like sheets, boards, or panels. Use `NewBox2D` and `NewItem2D` to create 2D boxes and items (depth is automatically set to 1):
+`Result.Boxes` lists used boxes, each with `PackedItem` values. `Result.Unpacked` lists items that did not fit, with a `Reason`.
 
-```golang
-packer := boxpacker3.NewPacker()
+## Algorithms
 
-boxes := []*boxpacker3.Box{
-  boxpacker3.NewBox2D("box 2d", 100, 50, 1000), // width=100, height=50, depth=1
-}
-items := []*boxpacker3.Item{
-  boxpacker3.NewItem2D("sheet 1", 30, 20, 100), // width=30, height=20, depth=1
-  boxpacker3.NewItem2D("sheet 2", 40, 25, 100),
-}
+- **Greedy** — first fit, best fit, worst fit, next fit, fullest box
+- **Search** — beam search with block-based expansion
+- **Portfolio** — runs several algorithms in parallel, keeps the best
 
-packResult, err := packer.PackCtx(context.Background(), boxes, items)
-if err != nil {
-  // handle error
-}
-```
-
-2D boxes and items work seamlessly with all packing strategies and can be mixed with regular 3D boxes and items if needed.
-
-## Packing Strategies
-
-The library supports multiple packing strategies that can be selected when creating a packer:
-
-### StrategyMinimizeBoxes (Default)
-Minimizes the number of boxes used. Sorts items by volume in descending order (largest first) and uses First Fit algorithm. Best for minimizing box count.
-
-### StrategyGreedy
-Simple and fast strategy. Sorts items by volume in ascending order (smallest first) and uses First Fit algorithm. May use more boxes than optimal strategies.
-
-### StrategyBestFit
-For each item, finds the box with the smallest remaining space that can accommodate it. Minimizes wasted space but requires checking all boxes for each item.
-
-### StrategyBestFitDecreasing
-Items are sorted by volume in descending order, and for each item, finds the box with the smallest remaining space. Typically provides 2-5% better space utilization than First Fit Decreasing.
-
-### StrategyNextFit
-Items are placed in the current box if it fits, otherwise a new box is used. Simpler than First Fit but may use more boxes.
-
-### StrategyWorstFit
-For each item, finds the box with the largest remaining space that can accommodate it. Helps distribute items more evenly across boxes.
-
-### StrategyAlmostWorstFit
-Similar to Worst Fit, but excludes boxes that are too large (almost empty). Prevents items from being placed in boxes that are nearly empty.
-
-## Parallel Strategy
-
-The library supports running multiple packing algorithms concurrently and selecting the best result using a comparator "goal" function.
-Use `NewParallelStrategy` with `WithAlgorithms` to list strategies to run and `WithGoal` to provide a comparator such as `TightestPackingGoal`.
-
-```golang
-parallel := boxpacker3.NewParallelStrategy(
-  boxpacker3.WithAlgorithms(
-    boxpacker3.NewMinimizeBoxesStrategy(),
-    boxpacker3.NewBestFitStrategy(),
-  ),
-  boxpacker3.WithGoal(boxpacker3.TightestPackingGoal),
-)
-
-packer := boxpacker3.NewPacker(boxpacker3.WithAlgorithm(parallel))
-res, err := packer.PackCtx(context.Background(), boxes, items)
-```
-
-## Example with Strategy
-
-```golang
+```go
 packer := boxpacker3.NewPacker(
-  boxpacker3.WithStrategy(boxpacker3.StrategyBestFitDecreasing),
+  boxpacker3.WithAlgorithm(boxpacker3.NewSearch(128, 3)),
 )
-
-packResult, err := packer.PackCtx(context.Background(), boxes, items)
-if err != nil {
-  // handle error
-}
 ```
+
+## Constraints
+
+- Weight limits, class separation, group co-location
+- Placement rules, admission rules, pair rules
+- Support ratio, load bearing, max load on top
+
+## Goals
+
+- `FewestBoxes`, `MostItems`, `LeastVolume`, `HighestFill`, `BalancedWeight`
+- Custom goals via `Lexicographic`, `Weighted`, `CostGoal`
+
+## Finishing
+
+- `BalanceWeight` — even weight across boxes
+- `Consolidate` — free the least-full box
+- `Rescue` — re-offer unpacked items
+- `Rehome` — move contents to smaller boxes
