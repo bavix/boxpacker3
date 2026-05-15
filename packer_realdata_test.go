@@ -71,6 +71,52 @@ func TestPacker_RealWorld_ECommerceOrder(t *testing.T) {
 	}
 }
 
+// TestPacker_RealWorld_PackriftEcommerceCartonFixture tests a public ecommerce
+// cartonization fixture from Packrift's packaging optimization benchmark corpus.
+func TestPacker_RealWorld_PackriftEcommerceCartonFixture(t *testing.T) {
+	t.Parallel()
+
+	// Fixture source:
+	// https://packrift.github.io/packaging-optimization-benchmark-corpus/cartonization-solver-fixtures.html
+	// Dimensions are in inches and weights are in pounds.
+	boxes := []*boxpacker3.Box{
+		boxpacker3.NewBox("packrift-40x20x20-1", 40, 20, 20, 75),
+		boxpacker3.NewBox("packrift-40x20x20-2", 40, 20, 20, 75),
+	}
+
+	items := []*boxpacker3.Item{
+		boxpacker3.NewItem("demo-small-item", 7.5, 4.5, 3.5, 1),
+		boxpacker3.NewItem("demo-flat-item-1", 15, 7, 2.5, 1.5),
+		boxpacker3.NewItem("demo-flat-item-2", 15, 7, 2.5, 1.5),
+		boxpacker3.NewItem("demo-long-item", 21, 8.5, 5, 3),
+		boxpacker3.NewItem("demo-bulk-item-1", 18, 12, 5.5, 4),
+		boxpacker3.NewItem("demo-bulk-item-2", 18, 12, 5.5, 4),
+		boxpacker3.NewItem("demo-bulk-item-3", 18, 12, 5.5, 4),
+		boxpacker3.NewItem("demo-bulk-item-4", 18, 12, 5.5, 4),
+	}
+
+	packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFitDecreasing))
+	result, err := packer.PackCtx(context.Background(), boxes, items)
+	require.NoError(t, err)
+
+	require.NotNil(t, result)
+	validatePackingInvariants(t, result)
+	require.Empty(t, result.UnfitItems, "No Packrift fixture items should be unfit")
+
+	totalPacked := 0
+	boxesUsed := 0
+
+	for _, box := range result.Boxes {
+		if len(box.GetItems()) > 0 {
+			boxesUsed++
+			totalPacked += len(box.GetItems())
+		}
+	}
+
+	require.Equal(t, len(items), totalPacked, "All Packrift fixture items should be packed")
+	require.LessOrEqual(t, boxesUsed, 2, "Fixture should fit in at most two cartons")
+}
+
 // TestPacker_RealWorld_WarehousePacking tests a warehouse packing scenario.
 func TestPacker_RealWorld_WarehousePacking(t *testing.T) {
 	t.Parallel()
