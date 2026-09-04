@@ -1,14 +1,18 @@
 package boxpacker3_test
 
 import (
+	"context"
 	"encoding/csv"
+	"errors"
 	"flag"
 	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -45,6 +49,8 @@ var updateBaseline = flag.Bool("update-baseline", false,
 
 const baselineTolerance = 0.005
 
+var errNoReading = errors.New("no reading")
+
 func publishedFiles() []string {
 	return []string{
 		fileBR1, fileBR2, fileBR3, fileBR4,
@@ -52,9 +58,9 @@ func publishedFiles() []string {
 	}
 }
 
-func meanUtilisation(tb testing.TB, problems []publishedProblem, strategy boxpacker3.RuleSettings, support float64) float64 {
-	tb.Helper()
-
+func meanUtilisation(ctx context.Context, problems []publishedProblem,
+	strategy boxpacker3.RuleSettings, support float64,
+) (float64, error) {
 	packer := boxpacker3.NewPacker(
 		boxpacker3.WithAlgorithm(boxpacker3.NewGreedy(strategy.Order, strategy.Selection)),
 		boxpacker3.WithRules(boxpacker3.Rules{MinSupportRatio: support}),
@@ -63,19 +69,23 @@ func meanUtilisation(tb testing.TB, problems []publishedProblem, strategy boxpac
 	var total float64
 
 	for _, problem := range problems {
-		result, err := packer.Pack(tb.Context(),
-			[]*boxpacker3.Box{problem.Box}, problem.Items)
-		require.NoError(tb, err)
-		require.NotEmpty(tb, result.Boxes)
+		result, err := packer.Pack(ctx, []*boxpacker3.Box{problem.Box}, problem.Items)
+		if err != nil {
+			return 0, err
+		}
+
+		if len(result.Boxes) == 0 {
+			return 0, fmt.Errorf("%w: problem %s left no packed box", errNoReading, problem.ID)
+		}
 
 		total += volumeUtilisation(result.Boxes[0])
 	}
 
 	if len(problems) == 0 {
-		return 0
+		return 0, nil
 	}
 
-	return total / float64(len(problems))
+	return total / float64(len(problems)), nil
 }
 
 func readBaseline(tb testing.TB) (map[string]float64, string) {
@@ -160,17 +170,77 @@ func appendHistory(tb testing.TB, measured map[string]float64, settings baseline
 	require.NoError(tb, writer.Error())
 }
 
+type publishedConfiguration struct {
+	name     string
+	strategy boxpacker3.RuleSettings
+	support  float64
+}
+
+type reading struct {
+	key   string
+	value float64
+	count int
+	err   error
+}
+
+func takeReadings(t *testing.T, configurations []publishedConfiguration, measured map[string]float64) int {
+	t.Helper()
+
+	type job struct {
+		key           string
+		problems      []publishedProblem
+		configuration publishedConfiguration
+	}
+
+	jobs := make([]job, 0, len(publishedFiles())*len(configurations))
+	instances := 0
+
+	for _, name := range publishedFiles() {
+		problems := loadPublishedInstances(t, name)
+		instances = max(instances, len(problems))
+
+		for _, configuration := range configurations {
+			jobs = append(jobs, job{key: name + "/" + configuration.name, problems: problems, configuration: configuration})
+		}
+	}
+
+	readings := make([]reading, len(jobs))
+	ctx := t.Context()
+
+	var group sync.WaitGroup
+
+	tickets := make(chan struct{}, runtime.GOMAXPROCS(0))
+
+	for at, entry := range jobs {
+		group.Go(func() {
+			tickets <- struct{}{}
+			defer func() { <-tickets }()
+
+			value, err := meanUtilisation(ctx, entry.problems, entry.configuration.strategy, entry.configuration.support)
+			readings[at] = reading{key: entry.key, value: value, count: len(entry.problems), err: err}
+		})
+	}
+
+	group.Wait()
+
+	for _, taken := range readings {
+		require.NoError(t, taken.err, taken.key)
+
+		measured[taken.key] = taken.value
+
+		t.Logf("%-32s mean utilisation %.4f over %d problems", taken.key, taken.value, taken.count)
+	}
+
+	return instances
+}
+
 func TestPublished_Utilisation(t *testing.T) {
 	t.Parallel()
 
 	t.Log("entries marked +support enforce full base support; published results " +
 		"for that constraint live in their own table and are not comparable with the rest")
 
-	configurations := []struct {
-		name     string
-		strategy boxpacker3.RuleSettings
-		support  float64
-	}{
+	configurations := []publishedConfiguration{
 		{nameFirstFitDecreasing, boxpacker3.RuleSettings{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectFirstFit}, 0},
 		{nameBestFitDecreasing, boxpacker3.RuleSettings{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectBestFit}, 0},
 		{
@@ -183,19 +253,7 @@ func TestPublished_Utilisation(t *testing.T) {
 	baseline, recorded := readBaseline(t)
 	measured := make(map[string]float64, len(publishedFiles())*len(configurations))
 
-	instances := 0
-
-	for _, name := range publishedFiles() {
-		problems := loadPublishedInstances(t, name)
-		instances = max(instances, len(problems))
-
-		for _, configuration := range configurations {
-			key := name + "/" + configuration.name
-			measured[key] = meanUtilisation(t, problems, configuration.strategy, configuration.support)
-
-			t.Logf("%-32s mean utilisation %.4f over %d problems", key, measured[key], len(problems))
-		}
-	}
+	instances := takeReadings(t, configurations, measured)
 
 	settings := currentSettings(instances)
 

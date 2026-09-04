@@ -171,13 +171,17 @@ func (c *Container) fitsAt(position Pivot, dimension Dimension) bool {
 		}
 	}
 
-	for _, item := range c.items {
-		if overlaps(position, dimension, item.position, item.dimension()) {
-			return false
-		}
-	}
+	vacant := true
 
-	return true
+	c.nearby(position, dimension, func(item *piece) bool {
+		if overlaps(position, dimension, item.position, item.dimension()) {
+			vacant = false
+		}
+
+		return vacant
+	})
+
+	return vacant
 }
 
 func (c *Container) bearsTheLoad(item *piece, position Pivot, dimension Dimension) bool {
@@ -291,16 +295,16 @@ func (c *Container) contactArea(position Pivot, dimension Dimension) float64 {
 		}
 	}
 
-	for _, item := range c.items {
+	c.nearby(position, dimension, func(item *piece) bool {
 		other := item.position
 		otherDimension := item.dimension()
 
-		if apart(position, dimension, other, otherDimension) {
-			continue
+		if !apart(position, dimension, other, otherDimension) {
+			area += touching(position, dimension, other, otherDimension)
 		}
 
-		area += touching(position, dimension, other, otherDimension)
-	}
+		return true
+	})
 
 	return area
 }
@@ -350,23 +354,33 @@ func (c *Container) residualGap(position Pivot, dimension Dimension, axis Axis) 
 	start := position[axis] + dimension[axis]
 	nearest := c.boxDimension(axis)
 
-	for _, item := range c.items {
+	rayPosition := position
+	rayPosition[axis] = start
+
+	rayDimension := dimension
+	rayDimension[axis] = max(c.boxDimension(axis)-start, 0)
+
+	c.nearby(rayPosition, rayDimension, func(item *piece) bool {
 		itemPosition := item.position
 		itemDimension := item.dimension()
 
+		if itemPosition[axis] >= nearest {
+			return true
+		}
+
 		if itemPosition[axis] < start-max(start, itemPosition[axis])*dimensionEpsilon {
-			continue
+			return true
 		}
 
 		if overlapLength(position[first], dimension[first], itemPosition[first], itemDimension[first]) <= 0 ||
 			overlapLength(position[second], dimension[second], itemPosition[second], itemDimension[second]) <= 0 {
-			continue
+			return true
 		}
 
-		if itemPosition[axis] < nearest {
-			nearest = itemPosition[axis]
-		}
-	}
+		nearest = itemPosition[axis]
+
+		return true
+	})
 
 	return nearest - start
 }

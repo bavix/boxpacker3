@@ -19,6 +19,7 @@ type Item struct {
 	rotation     Rotation
 	verticalAxes []Axis
 	rotations    []Orientation
+	oriented     [6]Dimension
 	group        string
 
 	maxLoadOnTop float64
@@ -144,6 +145,15 @@ func newItem(id string, w, h, d, wg float64, rotation Rotation) *Item {
 		rotation:     rotation,
 		verticalAxes: verticalAxesFor(rotation),
 		quantity:     1,
+	}
+
+	for rotation := range item.oriented {
+		matrix := rotationMatrix[rotation]
+		item.oriented[rotation] = Dimension{
+			item.whd[matrix[WidthAxis]],
+			item.whd[matrix[HeightAxis]],
+			item.whd[matrix[DepthAxis]],
+		}
 	}
 
 	item.rotations = distinctRotations(item)

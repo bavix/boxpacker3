@@ -38,6 +38,10 @@ linters:
           - dupl
           - gochecknoglobals
         path: (.+)_test.go
+      - linters:
+          - modernize
+        path: maximal_spaces.go
+        text: slicescontains
     paths:
       - third_party$
       - builtin$

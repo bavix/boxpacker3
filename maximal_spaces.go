@@ -22,10 +22,14 @@ func (s space) holds(dimension Dimension) bool {
 }
 
 func (s space) within(other space) bool {
-	for _, axis := range allAxes() {
+	for axis := range 3 {
 		slack := max(s.size[axis], other.size[axis]) * dimensionEpsilon
 
-		if s.origin[axis] < other.origin[axis]-slack || s.far(axis) > other.far(axis)+slack {
+		if s.origin[axis] < other.origin[axis]-slack {
+			return false
+		}
+
+		if s.origin[axis]+s.size[axis] > other.origin[axis]+other.size[axis]+slack {
 			return false
 		}
 	}
@@ -70,8 +74,18 @@ func addSlabs(kept []space, slabs []space) []space {
 			continue
 		}
 
-		kept = slices.DeleteFunc(kept, func(free space) bool { return free.within(slab) })
-		kept = append(kept, slab)
+		write := 0
+
+		for _, free := range kept {
+			if free.within(slab) {
+				continue
+			}
+
+			kept[write] = free
+			write++
+		}
+
+		kept = append(kept[:write], slab)
 	}
 
 	return kept
@@ -84,7 +98,13 @@ func tooThin(free space) bool {
 }
 
 func swallowedBy(spaces []space, slab space) bool {
-	return slices.ContainsFunc(spaces, slab.within)
+	for _, free := range spaces {
+		if slab.within(free) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func swallowedByEarlier(slabs []space, at int, slab space) bool {

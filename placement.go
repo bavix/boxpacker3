@@ -1,13 +1,7 @@
 package boxpacker3
 
 func rotatedDimension(item *Item, rotation Orientation) Dimension {
-	matrix := rotationMatrix[rotation]
-
-	return Dimension{
-		item.whd[matrix[WidthAxis]],
-		item.whd[matrix[HeightAxis]],
-		item.whd[matrix[DepthAxis]],
-	}
+	return item.oriented[rotation]
 }
 
 func (c *Container) acceptsPlacement(item *piece, position Pivot, dimension Dimension, allowUnstable bool) bool {

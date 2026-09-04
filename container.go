@@ -18,6 +18,7 @@ type Container struct {
 
 	points []Pivot
 	spaces []space
+	grid   *itemGrid
 	rules  Rules
 }
 
@@ -116,6 +117,7 @@ func (c *Container) clone() cloner {
 		separated:   c.separated,
 		points:      slices.Clone(c.points),
 		spaces:      slices.Clone(c.spaces),
+		grid:        nil,
 		rules:       c.rules,
 	}
 
@@ -128,6 +130,8 @@ func (c *Container) clone() cloner {
 }
 
 func (c *Container) insert(item *piece) {
+	c.invalidateIndex()
+
 	c.items = append(c.items, item)
 	c.itemsVolume += item.volume
 	c.itemsWeight += item.weight
@@ -138,6 +142,8 @@ func (c *Container) insert(item *piece) {
 }
 
 func (c *Container) reset() {
+	c.invalidateIndex()
+
 	c.items = c.items[:0]
 	c.itemsVolume = 0
 	c.itemsWeight = 0
