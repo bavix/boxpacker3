@@ -6,11 +6,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bavix/boxpacker3"
+	"github.com/bavix/boxpacker3/v2"
 )
 
-// TestParallel_PickBestResult verifies that the parallel runner actually picks the best outcome
-// from the available algorithms using real packing logic.
 func TestParallel_PickBestResult(t *testing.T) {
 	t.Parallel()
 
@@ -26,105 +24,85 @@ func TestParallel_PickBestResult(t *testing.T) {
 		boxpacker3.NewItem("small-2", 30, 30, 30, 100),
 	}
 
-	parallelAlgo := boxpacker3.NewParallelStrategy(
-		boxpacker3.WithAlgorithms(
-			boxpacker3.NewMinimizeBoxesStrategy(),
-			boxpacker3.NewBestFitStrategy(),
-		),
-		boxpacker3.WithGoal(boxpacker3.TightestPackingGoal),
+	parallelAlgo := boxpacker3.NewPortfolio(boxpacker3.LeastVolume,
+		boxpacker3.NewGreedy(boxpacker3.OrderDecreasing, boxpacker3.SelectFirstFit),
+		boxpacker3.NewGreedy(boxpacker3.OrderIncreasing, boxpacker3.SelectBestFit),
 	)
 
 	packer := boxpacker3.NewPacker(boxpacker3.WithAlgorithm(parallelAlgo))
-	result, err := packer.PackCtx(context.Background(), boxes, items)
+	result, err := packer.Pack(context.Background(), boxes, items)
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	require.Empty(t, result.UnfitItems, "Parallel strategy should have found a solution where all items fit")
+	require.Empty(t, result.Unpacked, "Parallel strategy should have found a solution where all items fit")
 
 	require.NotEmpty(t, result.Boxes)
 }
 
-// TestParallel_GoalSwitching verifies that changing the Goal (ComparatorFunc)
-// changes which result is selected as the winner.
 func TestParallel_GoalSwitching(t *testing.T) {
 	t.Parallel()
 
-	// Setup Mocks:
-	// Algo A: Uses 1 Box, but fails to pack 1 item (1 Unfit).
-	algoA := &MockAlgo{
-		name: "AlgoA",
-		res: &boxpacker3.Result{
-			Boxes:      makeMockBoxes(1),
-			UnfitItems: makeMockItems(1),
-		},
+	boxes := []*boxpacker3.Box{boxpacker3.NewBox("mock-box", 10, 10, 10, 100)}
+	items := []*boxpacker3.Item{
+		boxpacker3.NewItem("a", 1, 1, 1, 1),
+		boxpacker3.NewItem("b", 1, 1, 1, 1),
+		boxpacker3.NewItem("c", 1, 1, 1, 1),
 	}
 
-	// Algo B: Uses 2 Boxes, but packs ALL items (0 Unfit).
-	algoB := &MockAlgo{
-		name: "AlgoB",
-		res: &boxpacker3.Result{
-			Boxes:      makeMockBoxes(2),
-			UnfitItems: makeMockItems(0),
-		},
-	}
+	algoA := &splitAlgo{name: "AlgoA", boxes: 1, leave: 1, pick: 0}
 
-	// Case 1: Standard Goal "MinimizeBoxes".
-	strat1 := boxpacker3.NewParallelStrategy(
-		boxpacker3.WithAlgorithms(algoA, algoB),
-		boxpacker3.WithGoal(boxpacker3.MinimizeBoxesGoal),
-	)
+	algoB := &splitAlgo{name: "AlgoB", boxes: 2, leave: 0, pick: 0}
 
-	res1, _ := strat1.Pack(context.Background(), nil, nil)
-	require.Empty(t, res1.UnfitItems, "Standard goal should prefer Algo B (0 unfit items)")
+	strat1 := boxpacker3.NewPortfolio(boxpacker3.FewestBoxes, algoA, algoB)
+
+	res1 := packed(t, boxpacker3.NewPacker(boxpacker3.WithAlgorithm(strat1)), boxes, items)
+	require.Empty(t, res1.Unpacked, "Standard goal should prefer Algo B (0 unfit items)")
 	require.Len(t, res1.Boxes, 2, "Standard goal should accept more boxes to fit all items")
 
-	// Case 2: Custom Goal "Pure Box Count".
-	pureBoxCountGoal := func(cand, best *boxpacker3.Result) bool {
-		if best == nil {
-			return true
+	pureBoxCountGoal := boxpacker3.Lexicographic("PureBoxCount", boxpacker3.Criterion{
+		Name:    "boxes",
+		Measure: func(result *boxpacker3.Result) float64 { return float64(len(result.Boxes)) },
+		Higher:  false,
+	})
+
+	strat2 := boxpacker3.NewPortfolio(pureBoxCountGoal, algoA, algoB)
+
+	res2 := packed(t, boxpacker3.NewPacker(boxpacker3.WithAlgorithm(strat2)), boxes, items)
+	require.Len(t, res2.Boxes, 1, "Custom goal should prefer Algo A (fewer boxes)")
+	require.Len(t, res2.Unpacked, 1, "Custom goal accepted the result with unfit items")
+}
+
+type splitAlgo struct {
+	name  string
+	boxes int
+	leave int
+	pick  int
+}
+
+func (a *splitAlgo) Name() string { return a.name }
+
+func (a *splitAlgo) Pack(_ context.Context, problem *boxpacker3.Problem) (*boxpacker3.Packing, error) {
+	shelf := problem.Boxes()
+	opened := make([]*boxpacker3.Container, 0, a.boxes)
+
+	for i := range a.boxes {
+		opened = append(opened, problem.Open(shelf[a.pick], i))
+	}
+
+	instances := problem.Instances()
+	leftover := make([]boxpacker3.Instance, 0, a.leave)
+
+	for i, instance := range instances {
+		if i >= len(instances)-a.leave {
+			leftover = append(leftover, instance)
+
+			continue
 		}
 
-		return len(cand.Boxes) < len(best.Boxes)
+		if !opened[i%a.boxes].Fit(instance) {
+			leftover = append(leftover, instance)
+		}
 	}
 
-	strat2 := boxpacker3.NewParallelStrategy(
-		boxpacker3.WithAlgorithms(algoA, algoB),
-		boxpacker3.WithGoal(pureBoxCountGoal),
-	)
-
-	res2, _ := strat2.Pack(context.Background(), nil, nil)
-	require.Len(t, res2.Boxes, 1, "Custom goal should prefer Algo A (fewer boxes)")
-	require.Len(t, res2.UnfitItems, 1, "Custom goal accepted the result with unfit items")
-}
-
-type MockAlgo struct {
-	name string
-	res  *boxpacker3.Result
-}
-
-func (m *MockAlgo) Name() string { return m.name }
-
-// Pack implements PackingAlgorithm.
-func (m *MockAlgo) Pack(_ context.Context, _ []*boxpacker3.Box, _ []*boxpacker3.Item) (*boxpacker3.Result, error) {
-	return m.res, nil
-}
-
-func makeMockBoxes(n int) []*boxpacker3.Box {
-	boxes := make([]*boxpacker3.Box, n)
-	for i := range n {
-		b := boxpacker3.NewBox("mock-box", 10, 10, 10, 100)
-		b.PutItem(boxpacker3.NewItem("mock-item", 1, 1, 1, 1), boxpacker3.Pivot{})
-		boxes[i] = b
-	}
-
-	return boxes
-}
-
-func makeMockItems(n int) []*boxpacker3.Item {
-	items := make([]*boxpacker3.Item, n)
-	for i := range n {
-		items[i] = boxpacker3.NewItem("unfit-item", 1, 1, 1, 1)
-	}
-
-	return items
+	return problem.Packing(opened, leftover), nil
 }

@@ -2,55 +2,31 @@ package boxpacker3_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bavix/boxpacker3"
+	"github.com/bavix/boxpacker3/v2"
 )
 
-// strategyName returns a string representation of the packing strategy.
-func strategyName(strategy boxpacker3.PackingStrategy) string {
-	switch strategy {
-	case boxpacker3.StrategyMinimizeBoxes:
-		return "MinimizeBoxes"
-	case boxpacker3.StrategyGreedy:
-		return "Greedy"
-	case boxpacker3.StrategyBestFit:
-		return "BestFit"
-	case boxpacker3.StrategyBestFitDecreasing:
-		return "BestFitDecreasing"
-	case boxpacker3.StrategyNextFit:
-		return "NextFit"
-	case boxpacker3.StrategyWorstFit:
-		return "WorstFit"
-	case boxpacker3.StrategyAlmostWorstFit:
-		return "AlmostWorstFit"
-	default:
-		return fmt.Sprintf("Unknown(%d)", int(strategy))
-	}
+func strategyName(strategy boxpacker3.RuleSettings) string {
+	return strategy.Name()
 }
 
-// TestPacker_Property_AllItemsAccountedFor is a property-based test that verifies
-// all items are either packed or marked as unfit.
-//
 //nolint:funlen
 func TestPacker_Property_AllItemsAccountedFor(t *testing.T) {
 	t.Parallel()
 
-	// Test with different strategies
-	strategies := []boxpacker3.PackingStrategy{
-		boxpacker3.StrategyMinimizeBoxes,
-		boxpacker3.StrategyGreedy,
-		boxpacker3.StrategyBestFit,
-		boxpacker3.StrategyBestFitDecreasing,
-		boxpacker3.StrategyNextFit,
-		boxpacker3.StrategyWorstFit,
-		boxpacker3.StrategyAlmostWorstFit,
+	strategies := []boxpacker3.RuleSettings{
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectNextFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectWorstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectAlmostWorstFit},
 	}
 
-	// Test with different scenarios
 	testCases := []struct {
 		name  string
 		boxes []*boxpacker3.Box
@@ -103,7 +79,7 @@ func TestPacker_Property_AllItemsAccountedFor(t *testing.T) {
 			},
 			items: []*boxpacker3.Item{
 				boxpacker3.NewItem("fit", 30, 30, 30, 200),
-				boxpacker3.NewItem("unfit", 200, 200, 200, 5000), // Too large
+				boxpacker3.NewItem("unfit", 200, 200, 200, 5000),
 			},
 		},
 	}
@@ -114,37 +90,34 @@ func TestPacker_Property_AllItemsAccountedFor(t *testing.T) {
 			t.Run(strategyName+"_"+tc.name, func(t *testing.T) {
 				t.Parallel()
 
-				packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-				result, err := packer.PackCtx(context.Background(), tc.boxes, tc.items)
+				packer := rulePacker(strategy.Order, strategy.Selection)
+				result, err := packer.Pack(context.Background(), tc.boxes, tc.items)
 				require.NoError(t, err)
 				require.NotNil(t, result)
 
-				// Property: All items must be accounted for
 				totalPacked := 0
 				for _, box := range result.Boxes {
-					totalPacked += len(box.GetItems())
+					totalPacked += len(box.Items)
 				}
 
-				require.Equal(t, len(tc.items), totalPacked+len(result.UnfitItems),
+				require.Equal(t, len(tc.items), totalPacked+len(result.Unpacked),
 					"All items must be either packed or in UnfitItems")
 			})
 		}
 	}
 }
 
-// TestPacker_Property_NoDuplicates is a property-based test that verifies
-// no item is packed multiple times.
 func TestPacker_Property_NoDuplicates(t *testing.T) {
 	t.Parallel()
 
-	strategies := []boxpacker3.PackingStrategy{
-		boxpacker3.StrategyMinimizeBoxes,
-		boxpacker3.StrategyGreedy,
-		boxpacker3.StrategyBestFit,
-		boxpacker3.StrategyBestFitDecreasing,
-		boxpacker3.StrategyNextFit,
-		boxpacker3.StrategyWorstFit,
-		boxpacker3.StrategyAlmostWorstFit,
+	strategies := []boxpacker3.RuleSettings{
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectNextFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectWorstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectAlmostWorstFit},
 	}
 
 	boxes := []*boxpacker3.Box{
@@ -165,48 +138,42 @@ func TestPacker_Property_NoDuplicates(t *testing.T) {
 		t.Run(strategyName, func(t *testing.T) {
 			t.Parallel()
 
-			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result, err := packer.PackCtx(context.Background(), boxes, items)
+			packer := rulePacker(strategy.Order, strategy.Selection)
+			result, err := packer.Pack(context.Background(), boxes, items)
 			require.NoError(t, err)
 			require.NotNil(t, result)
 
-			// Property: No item should appear multiple times
 			itemCounts := make(map[string]int)
 
-			// Count items in boxes
 			for _, box := range result.Boxes {
-				for _, item := range box.GetItems() {
-					itemCounts[item.GetID()]++
+				for _, item := range box.Items {
+					itemCounts[item.ID()]++
 				}
 			}
 
-			// Count items in UnfitItems
-			for _, item := range result.UnfitItems {
-				itemCounts[item.GetID()]++
+			for _, item := range result.Unpacked {
+				itemCounts[item.ID()]++
 			}
 
-			// Each item should appear exactly once
 			for _, item := range items {
-				require.Equal(t, 1, itemCounts[item.GetID()],
-					"Item %s should appear exactly once", item.GetID())
+				require.Equal(t, 1, itemCounts[item.ID()],
+					"Item %s should appear exactly once", item.ID())
 			}
 		})
 	}
 }
 
-// TestPacker_Property_NoIntersections is a property-based test that verifies
-// no items intersect within the same box.
 func TestPacker_Property_NoIntersections(t *testing.T) {
 	t.Parallel()
 
-	strategies := []boxpacker3.PackingStrategy{
-		boxpacker3.StrategyMinimizeBoxes,
-		boxpacker3.StrategyGreedy,
-		boxpacker3.StrategyBestFit,
-		boxpacker3.StrategyBestFitDecreasing,
-		boxpacker3.StrategyNextFit,
-		boxpacker3.StrategyWorstFit,
-		boxpacker3.StrategyAlmostWorstFit,
+	strategies := []boxpacker3.RuleSettings{
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectNextFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectWorstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectAlmostWorstFit},
 	}
 
 	boxes := []*boxpacker3.Box{
@@ -226,39 +193,27 @@ func TestPacker_Property_NoIntersections(t *testing.T) {
 		t.Run(strategyName, func(t *testing.T) {
 			t.Parallel()
 
-			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result, err := packer.PackCtx(context.Background(), boxes, items)
+			packer := rulePacker(strategy.Order, strategy.Selection)
+			result, err := packer.Pack(context.Background(), boxes, items)
 			require.NoError(t, err)
 			require.NotNil(t, result)
 
-			// Property: No items should intersect within the same box
-			for _, box := range result.Boxes {
-				boxItems := box.GetItems()
-				for i := range boxItems {
-					for j := i + 1; j < len(boxItems); j++ {
-						require.False(t, boxItems[i].Intersect(boxItems[j]),
-							"Items %s and %s in box %s should not intersect",
-							boxItems[i].GetID(), boxItems[j].GetID(), box.GetID())
-					}
-				}
-			}
+			validatePackingInvariants(t, result)
 		})
 	}
 }
 
-// TestPacker_Property_WeightConstraints is a property-based test that verifies
-// weight constraints are respected.
 func TestPacker_Property_WeightConstraints(t *testing.T) {
 	t.Parallel()
 
-	strategies := []boxpacker3.PackingStrategy{
-		boxpacker3.StrategyMinimizeBoxes,
-		boxpacker3.StrategyGreedy,
-		boxpacker3.StrategyBestFit,
-		boxpacker3.StrategyBestFitDecreasing,
-		boxpacker3.StrategyNextFit,
-		boxpacker3.StrategyWorstFit,
-		boxpacker3.StrategyAlmostWorstFit,
+	strategies := []boxpacker3.RuleSettings{
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectFirstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderDecreasing, Selection: boxpacker3.SelectBestFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectNextFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectWorstFit},
+		{Order: boxpacker3.OrderIncreasing, Selection: boxpacker3.SelectAlmostWorstFit},
 	}
 
 	boxes := []*boxpacker3.Box{
@@ -277,74 +232,33 @@ func TestPacker_Property_WeightConstraints(t *testing.T) {
 		t.Run(strategyName, func(t *testing.T) {
 			t.Parallel()
 
-			packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(strategy))
-			result, err := packer.PackCtx(context.Background(), boxes, items)
+			packer := rulePacker(strategy.Order, strategy.Selection)
+			result, err := packer.Pack(context.Background(), boxes, items)
 			require.NoError(t, err)
 			require.NotNil(t, result)
 
-			// Property: Weight constraints must be respected
 			for _, box := range result.Boxes {
 				totalWeight := 0.0
-				for _, item := range box.GetItems() {
-					totalWeight += item.GetWeight()
+				for _, item := range box.Items {
+					totalWeight += item.Weight()
 				}
 
-				require.LessOrEqual(t, totalWeight, box.GetMaxWeight(),
-					"Box %s should respect weight constraint", box.GetID())
+				require.LessOrEqual(t, totalWeight, box.Box.MaxWeight(),
+					"Box %s should respect weight constraint", box.ID())
 			}
 		})
 	}
 }
 
-// validatePackingInvariants verifies that packing invariants are maintained:
-// - No items intersect within the same box
-// - Weight constraints are respected
-// - Volume constraints are respected
-// - Items are within box boundaries.
 func validatePackingInvariants(t *testing.T, result *boxpacker3.Result) {
 	t.Helper()
 
 	for _, box := range result.Boxes {
-		boxItems := box.GetItems()
+		requireNoOverlap(t, box)
+		requireWithinCapacity(t, box)
 
-		// Check for intersections
-		for i := range boxItems {
-			for j := i + 1; j < len(boxItems); j++ {
-				require.False(t, boxItems[i].Intersect(boxItems[j]),
-					"Items %s and %s in box %s should not intersect",
-					boxItems[i].GetID(), boxItems[j].GetID(), box.GetID())
-			}
-		}
-
-		// Check weight constraint
-		totalWeight := 0.0
-		for _, item := range boxItems {
-			totalWeight += item.GetWeight()
-		}
-
-		require.LessOrEqual(t, totalWeight, box.GetMaxWeight(),
-			"Box %s should respect weight constraint", box.GetID())
-
-		// Check volume constraint
-		totalVolume := 0.0
-		for _, item := range boxItems {
-			totalVolume += item.GetVolume()
-		}
-
-		require.LessOrEqual(t, totalVolume, box.GetVolume(),
-			"Box %s should respect volume constraint", box.GetID())
-
-		// Check geometric constraints (items within box boundaries)
-		for _, item := range boxItems {
-			dim := item.GetDimension()
-			pos := item.GetPosition()
-
-			require.LessOrEqual(t, pos[0]+dim[0], box.GetWidth(),
-				"Item %s width should be <= box width", item.GetID())
-			require.LessOrEqual(t, pos[1]+dim[1], box.GetHeight(),
-				"Item %s height should be <= box height", item.GetID())
-			require.LessOrEqual(t, pos[2]+dim[2], box.GetDepth(),
-				"Item %s depth should be <= box depth", item.GetID())
+		for _, item := range box.Items {
+			requireWithinBox(t, box, item)
 		}
 	}
 }

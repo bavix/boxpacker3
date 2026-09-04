@@ -1,6 +1,17 @@
 package boxpacker3
 
-// Box represents a box that can hold items.
+import (
+	"fmt"
+	"math"
+	"slices"
+)
+
+const dimensionEpsilon = 1e-9
+
+func withinLimit(used, limit float64) bool {
+	return used <= limit+math.Abs(limit)*dimensionEpsilon
+}
+
 type Box struct {
 	id string
 
@@ -8,204 +19,197 @@ type Box struct {
 	height float64
 	depth  float64
 
-	maxWeight float64
-	volume    float64
+	outerWidth  float64
+	outerHeight float64
+	outerDepth  float64
 
-	items []*Item
+	emptyWeight float64
+	maxWeight   float64
+	volume      float64
 
 	maxLength float64
 
-	itemsVolume float64
-	itemsWeight float64
+	accepts []string
+
+	quantity int
 }
 
-type boxSlice []*Box
+type BoxSpec struct {
+	ID                                  string
+	OuterWidth, OuterHeight, OuterDepth float64
+	InnerWidth, InnerHeight, InnerDepth float64
+	EmptyWeight                         float64
+	MaxWeight                           float64
+	Quantity                            int
 
-func (bs boxSlice) Len() int {
-	return len(bs)
+	Accepts []string
 }
 
-func (bs boxSlice) Less(i, j int) bool {
-	if bs[i] == nil {
-		return false
+func NewBoxFromSpec(spec BoxSpec) (*Box, error) {
+	spec = spec.withDefaults()
+
+	err := spec.validate()
+	if err != nil {
+		return nil, err
 	}
 
-	if bs[j] == nil {
-		return true
+	box := newBox(spec.ID, spec.InnerWidth, spec.InnerHeight, spec.InnerDepth, spec.MaxWeight)
+	box.quantity = max(spec.Quantity, 1)
+	box.outerWidth = spec.OuterWidth
+	box.outerHeight = spec.OuterHeight
+	box.outerDepth = spec.OuterDepth
+	box.emptyWeight = spec.EmptyWeight
+	box.accepts = slices.Clone(spec.Accepts)
+
+	return box, nil
+}
+
+func (s BoxSpec) withDefaults() BoxSpec {
+	if s.InnerWidth == 0 {
+		s.InnerWidth = s.OuterWidth
 	}
 
-	return bs[i].volume < bs[j].volume
+	if s.InnerHeight == 0 {
+		s.InnerHeight = s.OuterHeight
+	}
+
+	if s.InnerDepth == 0 {
+		s.InnerDepth = s.OuterDepth
+	}
+
+	return s
 }
 
-func (bs boxSlice) Swap(i, j int) {
-	bs[i], bs[j] = bs[j], bs[i]
+func measurable(size float64) bool {
+	return size > 0 && !math.IsInf(size, 0) && !math.IsNaN(size)
 }
 
-// NewBox creates a new Box with the given id, dimensions, and maximum weight.
+func (s BoxSpec) validateSides() error {
+	sizes := map[string]float64{
+		"outer width": s.OuterWidth, "outer height": s.OuterHeight, "outer depth": s.OuterDepth,
+		"inner width": s.InnerWidth, "inner height": s.InnerHeight, "inner depth": s.InnerDepth,
+	}
+
+	for axis, size := range sizes {
+		if !measurable(size) {
+			return fmt.Errorf("%w: box %q has %s %g", ErrInvalidDimension, s.ID, axis, size)
+		}
+	}
+
+	if volume := s.OuterWidth * s.OuterHeight * s.OuterDepth; math.IsInf(volume, 0) {
+		return fmt.Errorf("%w: box %q is too large to measure", ErrInvalidDimension, s.ID)
+	}
+
+	if s.InnerWidth > s.OuterWidth || s.InnerHeight > s.OuterHeight || s.InnerDepth > s.OuterDepth {
+		return fmt.Errorf("%w: box %q", ErrInnerExceedsOuter, s.ID)
+	}
+
+	return nil
+}
+
+func (s BoxSpec) validate() error {
+	err := s.validateSides()
+	if err != nil {
+		return err
+	}
+
+	if s.EmptyWeight < 0 {
+		return fmt.Errorf("%w: box %q has tare %g", ErrInvalidWeight, s.ID, s.EmptyWeight)
+	}
+
+	if s.Quantity < 0 {
+		return fmt.Errorf("%w: box %q has quantity %d", ErrInvalidQuantity, s.ID, s.Quantity)
+	}
+
+	if s.MaxWeight < s.EmptyWeight {
+		return fmt.Errorf("%w: box %q allows %g gross but weighs %g empty",
+			ErrInvalidWeight, s.ID, s.MaxWeight, s.EmptyWeight)
+	}
+
+	if slices.Contains(s.Accepts, "") {
+		return fmt.Errorf("%w: box %q accepts an empty class", ErrInvalidClass, s.ID)
+	}
+
+	return nil
+}
+
 func NewBox(id string, w, h, d, mw float64) *Box {
-	//nolint:exhaustruct
+	return newBox(id, w, h, d, mw)
+}
+
+func newBox(id string, w, h, d, mw float64) *Box {
+	//nolint:exhaustruct_v5
 	return &Box{
-		id:        id,
-		width:     w,
-		height:    h,
-		depth:     d,
-		maxWeight: mw,
-		maxLength: max(w, h, d),
-		volume:    w * h * d,
-		items:     make([]*Item, 0, 1),
+		id:          id,
+		width:       w,
+		height:      h,
+		depth:       d,
+		outerWidth:  w,
+		outerHeight: h,
+		outerDepth:  d,
+		maxWeight:   mw,
+		maxLength:   max(w, h, d),
+		volume:      w * h * d,
+		quantity:    1,
 	}
 }
 
-// NewBox2D creates a new 2D Box with the given id, dimensions, and maximum weight.
-// The depth is set to 1, making it effectively 2D (width x height).
-// This is useful for packing flat items like sheets, boards, or panels.
 func NewBox2D(id string, w, h, mw float64) *Box {
 	return NewBox(id, w, h, 1, mw)
 }
 
-func (b *Box) GetID() string {
+func (b *Box) Flat() bool {
+	return b.depth == 1
+}
+
+func (b *Box) Area() float64 {
+	return b.width * b.height
+}
+
+func (b *Box) ID() string {
 	return b.id
 }
 
-func (b *Box) GetWidth() float64 {
+func (b *Box) Width() float64 {
 	return b.width
 }
 
-func (b *Box) GetHeight() float64 {
+func (b *Box) Height() float64 {
 	return b.height
 }
 
-func (b *Box) GetDepth() float64 {
+func (b *Box) Depth() float64 {
 	return b.depth
 }
 
-func (b *Box) GetVolume() float64 {
+func (b *Box) Volume() float64 {
 	return b.volume
 }
 
-func (b *Box) GetMaxWeight() float64 {
+func (b *Box) MaxWeight() float64 {
 	return b.maxWeight
 }
 
-// GetItems returns a copy of the items slice.
-func (b *Box) GetItems() []*Item {
-	return append([]*Item(nil), b.items...)
+func (b *Box) OuterWidth() float64 {
+	return b.outerWidth
 }
 
-func (b *Box) GetRemainingVolume() float64 {
-	return b.volume - b.itemsVolume
+func (b *Box) OuterHeight() float64 {
+	return b.outerHeight
 }
 
-func (b *Box) PutItem(item *Item, p Pivot) bool {
-	if item == nil {
-		return false
-	}
-
-	if !b.canQuota(item) {
-		return false
-	}
-
-	item.position = p
-
-	for rt := RotationTypeWhd; rt <= RotationTypeWdh; rt++ {
-		matrix := rotationMatrix[rt]
-
-		//nolint:gosec // rotationMatrix values are guaranteed to be in range [0, 2] by const definition
-		itemWidth := item.whd[matrix[WidthAxis]]
-		//nolint:gosec // rotationMatrix values are guaranteed to be in range [0, 2] by const definition
-		itemHeight := item.whd[matrix[HeightAxis]]
-		//nolint:gosec // rotationMatrix values are guaranteed to be in range [0, 2] by const definition
-		itemDepth := item.whd[matrix[DepthAxis]]
-
-		if b.width < p[WidthAxis]+itemWidth ||
-			b.height < p[HeightAxis]+itemHeight ||
-			b.depth < p[DepthAxis]+itemDepth {
-			continue
-		}
-
-		item.setRotationType(rt)
-
-		if b.itemsIntersect(item) {
-			continue
-		}
-
-		b.insert(item)
-
-		return true
-	}
-
-	return false
+func (b *Box) OuterDepth() float64 {
+	return b.outerDepth
 }
 
-func (b *Box) itemsIntersect(item *Item) bool {
-	if item == nil {
-		return false
-	}
-
-	for _, ib := range b.items {
-		if ib != nil && ib.Intersect(item) {
-			return true
-		}
-	}
-
-	return false
+func (b *Box) Quantity() int {
+	return b.quantity
 }
 
-func (b *Box) canQuota(item *Item) bool {
-	if item == nil {
-		return false
-	}
-
-	return b.canFitVolume(item) && b.canFitWeight(item)
+func (b *Box) EmptyWeight() float64 {
+	return b.emptyWeight
 }
 
-func (b *Box) canFitVolume(item *Item) bool {
-	if item == nil {
-		return false
-	}
-
-	return b.itemsVolume+item.volume <= b.volume
-}
-
-func (b *Box) canFitWeight(item *Item) bool {
-	if item == nil {
-		return false
-	}
-
-	return b.itemsWeight+item.weight <= b.maxWeight
-}
-
-//nolint:ireturn
-func (b *Box) clone() cloner {
-	copyBox := &Box{
-		id:          b.id,
-		width:       b.width,
-		height:      b.height,
-		depth:       b.depth,
-		maxWeight:   b.maxWeight,
-		volume:      b.volume,
-		maxLength:   b.maxLength,
-		itemsVolume: b.itemsVolume,
-		itemsWeight: b.itemsWeight,
-	}
-	if b.items != nil {
-		copyBox.items = make([]*Item, len(b.items), cap(b.items))
-		copy(copyBox.items, b.items)
-	} else {
-		copyBox.items = nil
-	}
-
-	return copyBox
-}
-
-func (b *Box) insert(item *Item) {
-	b.items = append(b.items, item)
-	b.itemsVolume += item.volume
-	b.itemsWeight += item.weight
-}
-
-func (b *Box) Reset() {
-	b.items = b.items[:0]
-	b.itemsVolume = 0
-	b.itemsWeight = 0
+func (b *Box) Accepts() []string {
+	return slices.Clone(b.accepts)
 }

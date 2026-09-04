@@ -6,10 +6,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bavix/boxpacker3"
+	"github.com/bavix/boxpacker3/v2"
 )
 
-// TestPacker_AllStrategies_PackAllItems tests that all strategies pack items correctly.
 func TestPacker_AllStrategies_PackAllItems(t *testing.T) {
 	t.Parallel()
 
@@ -28,38 +27,36 @@ func TestPacker_AllStrategies_PackAllItems(t *testing.T) {
 		name   string
 		packer *boxpacker3.Packer
 	}{
-		{"MinimizeBoxes", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyMinimizeBoxes))},
-		{"Greedy", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyGreedy))},
-		{"BestFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFit))},
-		{"BestFitDecreasing", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFitDecreasing))},
-		{"NextFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyNextFit))},
-		{"WorstFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyWorstFit))},
-		{"AlmostWorstFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyAlmostWorstFit))},
+		{nameFirstFitDecreasing, rulePacker(boxpacker3.OrderDecreasing, boxpacker3.SelectFirstFit)},
+		{nameFirstFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectFirstFit)},
+		{nameBestFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectBestFit)},
+		{nameBestFitDecreasing, rulePacker(boxpacker3.OrderDecreasing, boxpacker3.SelectBestFit)},
+		{nameNextFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectNextFit)},
+		{nameWorstFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectWorstFit)},
+		{nameAlmostWorstFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectAlmostWorstFit)},
 	}
 
 	for _, strategy := range strategies {
 		t.Run(strategy.name, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := strategy.packer.PackCtx(context.Background(), boxes, items)
+			result, err := strategy.packer.Pack(context.Background(), boxes, items)
 			require.NoError(t, err)
 			require.NotNil(t, result)
 
 			validatePackingInvariants(t, result)
 
-			// All items should be accounted for
 			totalPacked := 0
 			for _, box := range result.Boxes {
-				totalPacked += len(box.GetItems())
+				totalPacked += len(box.Items)
 			}
 
-			require.Equal(t, len(items), totalPacked+len(result.UnfitItems),
+			require.Equal(t, len(items), totalPacked+len(result.Unpacked),
 				"%s: All items must be either packed or in UnfitItems", strategy.name)
 		})
 	}
 }
 
-// TestPacker_AllStrategies_HandleUnfitItems tests that all strategies handle unfit items correctly.
 func TestPacker_AllStrategies_HandleUnfitItems(t *testing.T) {
 	t.Parallel()
 
@@ -69,45 +66,43 @@ func TestPacker_AllStrategies_HandleUnfitItems(t *testing.T) {
 
 	items := []*boxpacker3.Item{
 		boxpacker3.NewItem("fit-1", 30, 30, 30, 200),
-		boxpacker3.NewItem("unfit-1", 100, 100, 100, 1000), // Doesn't fit
-		boxpacker3.NewItem("unfit-2", 100, 100, 100, 1000), // Doesn't fit
+		boxpacker3.NewItem("unfit-1", 100, 100, 100, 1000),
+		boxpacker3.NewItem("unfit-2", 100, 100, 100, 1000),
 	}
 
 	strategies := []struct {
 		name   string
 		packer *boxpacker3.Packer
 	}{
-		{"MinimizeBoxes", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyMinimizeBoxes))},
-		{"Greedy", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyGreedy))},
-		{"BestFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFit))},
-		{"BestFitDecreasing", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFitDecreasing))},
-		{"NextFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyNextFit))},
-		{"WorstFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyWorstFit))},
-		{"AlmostWorstFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyAlmostWorstFit))},
+		{nameFirstFitDecreasing, rulePacker(boxpacker3.OrderDecreasing, boxpacker3.SelectFirstFit)},
+		{nameFirstFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectFirstFit)},
+		{nameBestFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectBestFit)},
+		{nameBestFitDecreasing, rulePacker(boxpacker3.OrderDecreasing, boxpacker3.SelectBestFit)},
+		{nameNextFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectNextFit)},
+		{nameWorstFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectWorstFit)},
+		{nameAlmostWorstFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectAlmostWorstFit)},
 	}
 
 	for _, strategy := range strategies {
 		t.Run(strategy.name, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := strategy.packer.PackCtx(context.Background(), boxes, items)
+			result, err := strategy.packer.Pack(context.Background(), boxes, items)
 			require.NoError(t, err)
 			require.NotNil(t, result)
 			validatePackingInvariants(t, result)
 
-			// Verify unfit items
 			unfitIDs := make(map[string]bool)
-			for _, item := range result.UnfitItems {
-				unfitIDs[item.GetID()] = true
+			for _, item := range result.Unpacked {
+				unfitIDs[item.ID()] = true
 			}
 
 			require.True(t, unfitIDs["unfit-1"], "%s: unfit-1 should be unfit", strategy.name)
 			require.True(t, unfitIDs["unfit-2"], "%s: unfit-2 should be unfit", strategy.name)
 
-			// Verify fit items are packed
 			totalPacked := 0
 			for _, box := range result.Boxes {
-				totalPacked += len(box.GetItems())
+				totalPacked += len(box.Items)
 			}
 
 			require.Equal(t, 1, totalPacked, "%s: One item should be packed", strategy.name)
@@ -115,7 +110,6 @@ func TestPacker_AllStrategies_HandleUnfitItems(t *testing.T) {
 	}
 }
 
-// TestPacker_StrategyComparison_SpaceUtilization compares space utilization across strategies.
 func TestPacker_StrategyComparison_SpaceUtilization(t *testing.T) {
 	t.Parallel()
 
@@ -125,8 +119,6 @@ func TestPacker_StrategyComparison_SpaceUtilization(t *testing.T) {
 		boxpacker3.NewBox("box-3", 100, 100, 100, 2000),
 	}
 
-	// Items with varying sizes that benefit from different strategies
-	// Using simpler sizes to avoid geometric intersection issues
 	items := []*boxpacker3.Item{
 		boxpacker3.NewItem("large-1", 50, 50, 50, 500),
 		boxpacker3.NewItem("large-2", 50, 50, 50, 500),
@@ -138,28 +130,26 @@ func TestPacker_StrategyComparison_SpaceUtilization(t *testing.T) {
 		name   string
 		packer *boxpacker3.Packer
 	}{
-		{"Greedy", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyGreedy))},
-		{"MinimizeBoxes", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyMinimizeBoxes))},
-		{"BestFit", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFit))},
-		{"BestFitDecreasing", boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyBestFitDecreasing))},
+		{nameFirstFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectFirstFit)},
+		{nameFirstFitDecreasing, rulePacker(boxpacker3.OrderDecreasing, boxpacker3.SelectFirstFit)},
+		{nameBestFitIncreasing, rulePacker(boxpacker3.OrderIncreasing, boxpacker3.SelectBestFit)},
+		{nameBestFitDecreasing, rulePacker(boxpacker3.OrderDecreasing, boxpacker3.SelectBestFit)},
 	}
 
 	results := make(map[string]*boxpacker3.Result)
 
 	for _, strategy := range strategies {
-		result, err := strategy.packer.PackCtx(context.Background(), boxes, items)
+		result, err := strategy.packer.Pack(context.Background(), boxes, items)
 		require.NoError(t, err)
 		require.NotNil(t, result)
 		validatePackingInvariants(t, result)
 		results[strategy.name] = result
 	}
 
-	// All strategies should pack all items
 	for name, result := range results {
-		require.Empty(t, result.UnfitItems, "%s should pack all items", name)
+		require.Empty(t, result.Unpacked, "%s should pack all items", name)
 	}
 
-	// Calculate space utilization for each strategy
 	utilization := make(map[string]float64)
 
 	for name, result := range results {
@@ -167,9 +157,9 @@ func TestPacker_StrategyComparison_SpaceUtilization(t *testing.T) {
 		totalAvailable := 0.0
 
 		for _, box := range result.Boxes {
-			if len(box.GetItems()) > 0 {
-				totalUsed += box.GetVolume() - box.GetRemainingVolume()
-				totalAvailable += box.GetVolume()
+			if len(box.Items) > 0 {
+				totalUsed += box.Volume() - box.RemainingVolume()
+				totalAvailable += box.Volume()
 			}
 		}
 
@@ -178,7 +168,6 @@ func TestPacker_StrategyComparison_SpaceUtilization(t *testing.T) {
 		}
 	}
 
-	// BestFitDecreasing should have good utilization
-	require.Greater(t, utilization["BestFitDecreasing"], 0.0,
+	require.Greater(t, utilization[nameBestFitDecreasing], 0.0,
 		"BestFitDecreasing should have positive utilization")
 }

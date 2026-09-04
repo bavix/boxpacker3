@@ -2,204 +2,360 @@ package boxpacker3
 
 import (
 	"math"
+	"strings"
 )
 
-type metricFunc func(res *Result) float64
-
-type direction int
-
-const (
-	lessIsBetter direction = iota
-	moreIsBetter
-)
-
-const epsilon = 0.00001
-
-type criterion struct {
-	metric    metricFunc
-	direction direction
+type Goal interface {
+	Name() string
+	Compare(a, b *Result) int
 }
 
-func makeGoal(criteria ...criterion) ComparatorFunc {
-	return func(candidate, currentBest *Result) bool {
-		if currentBest == nil {
-			return true
-		}
+type Metrics struct {
+	Unpacked int
 
-		for _, c := range criteria {
-			valCand := c.metric(candidate)
-			valBest := c.metric(currentBest)
+	Boxes int
 
-			if math.Abs(valCand-valBest) < epsilon {
-				continue
-			}
+	BoxVolume float64
 
-			if c.direction == lessIsBetter {
-				return valCand < valBest
-			}
+	ItemsVolume float64
 
-			return valCand > valBest
-		}
+	Fill float64
 
-		return false
-	}
+	WeightSpread float64
 }
 
-func unfitCountMetric(res *Result) float64 {
-	return float64(len(res.UnfitItems))
-}
-
-func boxCountMetric(res *Result) float64 {
-	return float64(countUsedBoxes(res.Boxes))
-}
-
-func totalVolumeMetric(res *Result) float64 {
-	return getUsedVolume(res.Boxes)
-}
-
-func averageFillRateMetric(res *Result) float64 {
-	return getAverageFillRate(res.Boxes)
-}
-
-func weightStdDevMetric(res *Result) float64 {
-	return getWeightStdDev(res.Boxes)
-}
-
-// MinimizeBoxesGoal prioritizes using the fewest number of boxes possible.
-// This is the classic bin packing goal, ideal for reducing shipping label costs.
-//
-// 1. Maximize items packed (minimize unfit items).
-// 2. Minimize number of boxes used.
-// 3. Minimize total volume of boxes used (prefer smaller boxes).
-func MinimizeBoxesGoal(candidate, currentBest *Result) bool {
-	return makeGoal(
-		criterion{unfitCountMetric, lessIsBetter},
-		criterion{boxCountMetric, lessIsBetter},
-		criterion{totalVolumeMetric, lessIsBetter},
-	)(candidate, currentBest)
-}
-
-// MaximizeItemsGoal prioritizes fitting the maximum number of items, regardless of box efficiency.
-// Ideal for fixed-container scenarios (e.g., loading a truck) where leaving items behind is the worst outcome.
-//
-// 1. Maximize items packed (minimize unfit items).
-func MaximizeItemsGoal(candidate, currentBest *Result) bool {
-	return makeGoal(
-		criterion{unfitCountMetric, lessIsBetter},
-	)(candidate, currentBest)
-}
-
-// TightestPackingGoal prioritizes high density / volume utilization.
-// Ideal when shipping costs are calculated based on dimensional weight or total volume.
-//
-// 1. Maximize items packed (minimize unfit items).
-// 2. Minimize total volume of boxes used.
-// 3. Minimize number of boxes used.
-func TightestPackingGoal(candidate, currentBest *Result) bool {
-	return makeGoal(
-		criterion{unfitCountMetric, lessIsBetter},
-		criterion{totalVolumeMetric, lessIsBetter},
-		criterion{boxCountMetric, lessIsBetter},
-	)(candidate, currentBest)
-}
-
-// MaxAverageFillRateGoal prioritizes maximizing the average fill rate of used boxes.
-// Ideal when shipping costs are influenced by dimensional weight or when higher density reduces cost.
-//
-// 1. Maximize items packed (minimize unfit items).
-// 2. Maximize average fill rate across used boxes.
-func MaxAverageFillRateGoal(candidate, currentBest *Result) bool {
-	return makeGoal(
-		criterion{unfitCountMetric, lessIsBetter},
-		criterion{averageFillRateMetric, moreIsBetter},
-	)(candidate, currentBest)
-}
-
-// BalancedPackingGoal prioritizes a balanced distribution of weights and box sizes.
-// Ideal for scenarios where the total weight of items needs to be distributed evenly across boxes.
-//
-// 1. Maximize items packed (minimize unfit items).
-// 2. Minimize weight standard deviation.
-// 3. Minimize number of boxes used.
-func BalancedPackingGoal(candidate, currentBest *Result) bool {
-	return makeGoal(
-		criterion{unfitCountMetric, lessIsBetter},
-		criterion{weightStdDevMetric, lessIsBetter},
-		criterion{boxCountMetric, lessIsBetter},
-	)(candidate, currentBest)
-}
-
-func countUsedBoxes(boxes []*Box) int {
-	n := 0
-
-	for _, b := range boxes {
-		if len(b.items) > 0 {
-			n++
-		}
+func MetricsOf(result *Result) Metrics {
+	if result == nil {
+		return Metrics{Unpacked: 0, Boxes: 0, BoxVolume: 0, ItemsVolume: 0, Fill: 0, WeightSpread: 0}
 	}
 
-	return n
-}
-
-func getUsedVolume(boxes []*Box) float64 {
-	var v float64
-
-	for _, b := range boxes {
-		if len(b.items) > 0 {
-			v += b.volume
-		}
+	metrics := Metrics{
+		Unpacked:     len(result.Unpacked),
+		Boxes:        len(result.Boxes),
+		BoxVolume:    0,
+		ItemsVolume:  0,
+		Fill:         0,
+		WeightSpread: 0,
 	}
 
-	return v
-}
-
-func getAverageFillRate(boxes []*Box) float64 {
-	var (
-		totalRate float64
-		count     int
-	)
-
-	for _, b := range boxes {
-		if len(b.items) > 0 && b.volume > 0 {
-			totalRate += b.itemsVolume / b.volume
-			count++
-		}
+	for _, box := range result.Boxes {
+		metrics.BoxVolume += box.Box.volume
+		metrics.ItemsVolume += box.Stats.ItemsVolume
+		metrics.Fill += box.Stats.Fill
 	}
 
-	if count == 0 {
+	if metrics.Boxes > 0 {
+		metrics.Fill /= float64(metrics.Boxes)
+	}
+
+	metrics.WeightSpread = weightSpread(result.Boxes)
+
+	return metrics
+}
+
+func weightSpread(boxes []PackedBox) float64 {
+	if len(boxes) <= 1 {
 		return 0
 	}
 
-	return totalRate / float64(count)
-}
+	var sum float64
 
-func getWeightStdDev(boxes []*Box) float64 {
-	var (
-		weights []float64
-		sum     float64
-	)
-
-	for _, b := range boxes {
-		if len(b.items) > 0 {
-			w := b.itemsWeight
-			weights = append(weights, w)
-			sum += w
-		}
+	for _, box := range boxes {
+		sum += box.Stats.ItemsWeight
 	}
 
-	count := float64(len(weights))
-	if count <= 1 {
-		return 0
-	}
-
-	mean := sum / count
+	mean := sum / float64(len(boxes))
 
 	var variance float64
 
-	for _, w := range weights {
-		diff := w - mean
+	for _, box := range boxes {
+		diff := box.Stats.ItemsWeight - mean
 		variance += diff * diff
 	}
 
-	return math.Sqrt(variance / count)
+	return math.Sqrt(variance / float64(len(boxes)))
+}
+
+const epsilon = 1e-9
+
+func sameReading(a, b float64) bool {
+	return math.Abs(a-b) <= epsilon*max(math.Abs(a), math.Abs(b))
+}
+
+type Criterion struct {
+	Name string
+
+	Measure func(*Result) float64
+
+	Higher bool
+}
+
+type Term struct {
+	Criterion
+
+	Weight float64
+}
+
+type lexicographic struct {
+	name     string
+	criteria []Criterion
+}
+
+func (g lexicographic) Name() string {
+	return g.name
+}
+
+func (g lexicographic) Compare(a, b *Result) int {
+	if decided, order := decideMissing(a, b); decided {
+		return order
+	}
+
+	for _, criterion := range g.criteria {
+		first, second := criterion.Measure(a), criterion.Measure(b)
+		if sameReading(first, second) {
+			continue
+		}
+
+		if criterion.Higher == (first > second) {
+			return -1
+		}
+
+		return 1
+	}
+
+	return 0
+}
+
+func Lexicographic(name string, criteria ...Criterion) Goal { //nolint:ireturn // the caller passes it to a runner.
+	return lexicographic{name: name, criteria: criteria}
+}
+
+type weighted struct {
+	name  string
+	terms []Term
+}
+
+func (g weighted) Name() string {
+	return g.name
+}
+
+func (g weighted) Compare(a, b *Result) int {
+	if decided, order := decideMissing(a, b); decided {
+		return order
+	}
+
+	first, second := g.score(a), g.score(b)
+	if sameReading(first, second) {
+		return 0
+	}
+
+	if first < second {
+		return -1
+	}
+
+	return 1
+}
+
+func (g weighted) score(result *Result) float64 {
+	total := 0.0
+
+	for _, term := range g.terms {
+		reading := term.Weight * term.Measure(result)
+		if term.Higher {
+			reading = -reading
+		}
+
+		total += reading
+	}
+
+	return total
+}
+
+func Weighted(name string, terms ...Term) Goal { //nolint:ireturn // the caller passes it to a runner.
+	return weighted{name: name, terms: terms}
+}
+
+type costGoal struct {
+	name string
+	cost func(*Result) float64
+}
+
+func (g costGoal) Name() string {
+	return g.name
+}
+
+func (g costGoal) Compare(a, b *Result) int {
+	if decided, order := decideMissing(a, b); decided {
+		return order
+	}
+
+	first, second := g.cost(a), g.cost(b)
+	if sameReading(first, second) {
+		return 0
+	}
+
+	if first < second {
+		return -1
+	}
+
+	return 1
+}
+
+func CostGoal(name string, cost func(*Result) float64) Goal { //nolint:ireturn // the caller passes it to a runner.
+	return costGoal{name: name, cost: cost}
+}
+
+func decideMissing(a, b *Result) (bool, int) {
+	switch {
+	case a == nil && b == nil:
+		return true, 0
+	case a == nil:
+		return true, 1
+	case b == nil:
+		return true, -1
+	}
+
+	return false, 0
+}
+
+type Tariff struct {
+	PerBox map[string]float64
+
+	PerKg float64
+
+	DimDivisor float64
+
+	Minimum float64
+}
+
+func (t Tariff) Price(box PackedBox) float64 {
+	chargeable := box.Stats.GrossWeight
+
+	if t.DimDivisor > 0 {
+		volumetric := box.Box.outerWidth * box.Box.outerHeight * box.Box.outerDepth / t.DimDivisor
+		chargeable = max(chargeable, volumetric)
+	}
+
+	return t.PerBox[box.ID()] + t.PerKg*chargeable
+}
+
+func (t Tariff) Total(result *Result) float64 {
+	if result == nil {
+		return math.Inf(1)
+	}
+
+	total := 0.0
+
+	for _, box := range result.Boxes {
+		total += t.Price(box)
+	}
+
+	return max(total, t.Minimum)
+}
+
+func ShippingCost(name string, tariff Tariff) Goal { //nolint:ireturn // the caller passes it to a runner.
+	return Lexicographic(name,
+		Criterion{Name: criterionUnpacked, Measure: unpackedCount, Higher: false},
+		Criterion{Name: "cost", Measure: tariff.Total, Higher: false},
+	)
+}
+
+func unpackedCount(result *Result) float64 {
+	return float64(len(result.Unpacked))
+}
+
+func boxCount(result *Result) float64 {
+	return float64(len(result.Boxes))
+}
+
+func boxVolume(result *Result) float64 {
+	return MetricsOf(result).BoxVolume
+}
+
+func fillRate(result *Result) float64 {
+	return MetricsOf(result).Fill
+}
+
+func loadSpread(result *Result) float64 {
+	return weightSpread(result.Boxes)
+}
+
+const (
+	criterionUnpacked = "unpacked"
+	criterionBoxes    = "boxes"
+	criterionVolume   = "box volume"
+)
+
+const (
+	nameFewestBoxes    = "FewestBoxes"
+	nameMostItems      = "MostItems"
+	nameLeastVolume    = "LeastVolume"
+	nameHighestFill    = "HighestFill"
+	nameBalancedWeight = "BalancedWeight"
+)
+
+//nolint:gochecknoglobals // each is one fixed goal, exposed as a value.
+var (
+	FewestBoxes = Lexicographic(nameFewestBoxes,
+		Criterion{Name: criterionUnpacked, Measure: unpackedCount, Higher: false},
+		Criterion{Name: criterionBoxes, Measure: boxCount, Higher: false},
+		Criterion{Name: criterionVolume, Measure: boxVolume, Higher: false},
+	)
+
+	MostItems = Lexicographic(nameMostItems,
+		Criterion{Name: criterionUnpacked, Measure: unpackedCount, Higher: false},
+	)
+
+	LeastVolume = Lexicographic(nameLeastVolume,
+		Criterion{Name: criterionUnpacked, Measure: unpackedCount, Higher: false},
+		Criterion{Name: criterionVolume, Measure: boxVolume, Higher: false},
+		Criterion{Name: criterionBoxes, Measure: boxCount, Higher: false},
+	)
+
+	HighestFill = Lexicographic(nameHighestFill,
+		Criterion{Name: criterionUnpacked, Measure: unpackedCount, Higher: false},
+		Criterion{Name: "fill", Measure: fillRate, Higher: true},
+	)
+
+	BalancedWeight = Lexicographic(nameBalancedWeight,
+		Criterion{Name: criterionUnpacked, Measure: unpackedCount, Higher: false},
+		Criterion{Name: "weight spread", Measure: loadSpread, Higher: false},
+		Criterion{Name: criterionBoxes, Measure: boxCount, Higher: false},
+	)
+)
+
+func Goals() []Goal {
+	return []Goal{FewestBoxes, MostItems, LeastVolume, HighestFill, BalancedWeight}
+}
+
+func GoalNames() []string {
+	names := make([]string, 0, len(Goals()))
+
+	for _, goal := range Goals() {
+		names = append(names, goal.Name())
+	}
+
+	return names
+}
+
+func GoalByName(name string) (Goal, bool) { //nolint:ireturn // the caller asked for one by name.
+	for _, goal := range Goals() {
+		if strings.EqualFold(goal.Name(), name) {
+			return goal, true
+		}
+	}
+
+	return nil, false
+}
+
+func prefers(goal Goal, candidate, best *Result) bool {
+	if best == nil {
+		return candidate != nil
+	}
+
+	return goal.Compare(candidate, best) < 0
+}
+
+func countUsedBoxes(boxes []*Container) int {
+	return len(usedBoxes(boxes))
 }

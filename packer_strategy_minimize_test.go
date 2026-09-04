@@ -6,25 +6,20 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/bavix/boxpacker3"
+	"github.com/bavix/boxpacker3/v2"
 )
 
-// TestPacker_StrategyMinimizeBoxes_MixedPackaging tests the specific case where
-// StrategyMinimizeBoxes should pack all items into a single box (the medium one),
-// but currently packs into two boxes incorrectly.
 func TestPacker_StrategyMinimizeBoxes_MixedPackaging(t *testing.T) {
 	t.Parallel()
 
-	packer := boxpacker3.NewPacker(boxpacker3.WithStrategy(boxpacker3.StrategyMinimizeBoxes))
+	packer := rulePacker(boxpacker3.OrderDecreasing, boxpacker3.SelectFirstFit)
 
-	// Boxes: small, medium, large
 	boxes := []*boxpacker3.Box{
 		boxpacker3.NewBox("small", 220, 185, 50, 20000),
 		boxpacker3.NewBox("medium", 425, 265, 190, 20000),
 		boxpacker3.NewBox("large", 530, 380, 265, 20000),
 	}
 
-	// Products
 	items := []*boxpacker3.Item{
 		boxpacker3.NewItem("item-1", 50, 30, 20, 250),
 		boxpacker3.NewItem("item-2", 80, 60, 40, 500),
@@ -43,29 +38,19 @@ func TestPacker_StrategyMinimizeBoxes_MixedPackaging(t *testing.T) {
 		boxpacker3.NewItem("item-15", 210, 140, 100, 1600),
 	}
 
-	result, err := packer.PackCtx(context.Background(), boxes, items)
+	result, err := packer.Pack(context.Background(), boxes, items)
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	require.Empty(t, result.UnfitItems, "All items should be packed")
+	require.Empty(t, result.Unpacked, "All items should be packed")
 
-	// StrategyMinimizeBoxes should pack all items into a single box (medium)
-	// FirstFitDecreasing can do it, so MinimizeBoxes should too
-	// Count only boxes with items (empty boxes are still returned but don't count)
-	usedBoxes := 0
-
-	for _, box := range result.Boxes {
-		if len(box.GetItems()) > 0 {
-			usedBoxes++
-		}
-	}
+	usedBoxes := usedBoxCountOf(result)
 
 	require.LessOrEqual(t, usedBoxes, 1,
-		"StrategyMinimizeBoxes should pack all items into a single box (medium), but packed into %d boxes", usedBoxes)
+		"FirstFitDecreasing should pack all items into a single box (medium), but packed into %d boxes", usedBoxes)
 
-	// Verify all items are packed
 	totalPacked := 0
 	for _, box := range result.Boxes {
-		totalPacked += len(box.GetItems())
+		totalPacked += len(box.Items)
 	}
 
 	require.Equal(t, len(items), totalPacked, "All items should be packed")

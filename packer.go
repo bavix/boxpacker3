@@ -2,60 +2,86 @@ package boxpacker3
 
 import (
 	"context"
+	"time"
 )
 
-// PackerOption is a functional option for configuring a Packer.
-type PackerOption func(*Packer)
+type Option func(*Packer)
 
-// WithStrategy sets the packing strategy using the legacy enum constants.
-// This ensures backward compatibility with existing codebases.
-func WithStrategy(strategy PackingStrategy) PackerOption {
+func WithAlgorithm(algorithm Algorithm) Option {
 	return func(p *Packer) {
-		switch strategy {
-		case StrategyMinimizeBoxes:
-			p.algorithm = NewMinimizeBoxesStrategy()
-		case StrategyGreedy:
-			p.algorithm = NewGreedyStrategy()
-		case StrategyBestFit:
-			p.algorithm = NewBestFitStrategy()
-		case StrategyBestFitDecreasing:
-			p.algorithm = NewBestFitDecreasingStrategy()
-		case StrategyNextFit:
-			p.algorithm = NewNextFitStrategy()
-		case StrategyWorstFit:
-			p.algorithm = NewWorstFitStrategy()
-		case StrategyAlmostWorstFit:
-			p.algorithm = NewAlmostWorstFitStrategy()
-		default:
-			p.algorithm = NewMinimizeBoxesStrategy()
+		if algorithm != nil {
+			p.algorithm = algorithm
 		}
 	}
 }
 
-// WithAlgorithm sets a specific packing algorithm instance.
-// This allows for custom implementations or the use of the ParallelStrategy runner.
-func WithAlgorithm(algo PackingAlgorithm) PackerOption {
+func WithRules(rules Rules) Option {
 	return func(p *Packer) {
-		p.algorithm = algo
+		p.rules = p.rules.merged(rules.clamped())
 	}
 }
 
-// Packer packs items into boxes using a configurable algorithm.
+func WithFinishers(finishers ...Finisher) Option {
+	return func(p *Packer) {
+		p.finishers = compactFinishers(finishers)
+	}
+}
+
+func WithMerit(merit Merit) Option {
+	return func(p *Packer) {
+		if merit != nil {
+			p.rules.Merit = merit
+		}
+	}
+}
+
+func WithFiller(filler Filler) Option {
+	return func(p *Packer) {
+		if filler != nil {
+			p.rules.Filler = filler
+		}
+	}
+}
+
+func WithBudget(budget Budget) Option {
+	return func(p *Packer) {
+		p.budget = budget
+	}
+}
+
+func WithObserver(observer Observer) Option {
+	return func(p *Packer) {
+		p.observer = observer
+	}
+}
+
+func compactFinishers(finishers []Finisher) []Finisher {
+	kept := make([]Finisher, 0, len(finishers))
+
+	for _, finisher := range finishers {
+		if finisher != nil {
+			kept = append(kept, finisher)
+		}
+	}
+
+	return kept
+}
+
 type Packer struct {
-	algorithm PackingAlgorithm
+	algorithm Algorithm
+	rules     Rules
+	finishers []Finisher
+	budget    Budget
+	observer  Observer
 }
 
-// Result represents the result of packing items into boxes.
-type Result struct {
-	UnfitItems itemSlice
-	Boxes      boxSlice
-}
-
-// NewPacker creates a new Packer.
-// By default, it uses the MinimizeBoxes strategy (First Fit Decreasing) to match historical behavior.
-func NewPacker(opts ...PackerOption) *Packer {
+func NewPacker(opts ...Option) *Packer {
 	p := &Packer{
-		algorithm: NewMinimizeBoxesStrategy(),
+		algorithm: NewGreedy(OrderDecreasing, SelectFullestBox),
+		rules:     Rules{},
+		finishers: DefaultFinishers(),
+		budget:    Budget{},
+		observer:  nil,
 	}
 
 	for _, opt := range opts {
@@ -65,35 +91,45 @@ func NewPacker(opts ...PackerOption) *Packer {
 	return p
 }
 
-// PackCtx packs items into boxes with context support for cancellation.
-// It delegates the actual logic to the configured PackingAlgorithm.
-func (p *Packer) PackCtx(ctx context.Context, inputBoxes []*Box, inputItems []*Item) (*Result, error) {
-	if inputBoxes == nil {
-		inputBoxes = []*Box{}
-	}
-
-	if inputItems == nil {
-		inputItems = []*Item{}
-	}
-
-	return p.algorithm.Pack(ctx, CopySlicePtr(inputBoxes), CopySlicePtr(inputItems))
+func (p *Packer) Algorithm() Algorithm { //nolint:ireturn // it hands back what it was given.
+	return p.algorithm
 }
 
-// Pack packs items into boxes.
-//
-// Deprecated: Use PackCtx instead. This function is kept for backward compatibility
-// but PackCtx provides better control with context support for cancellation.
-//
-// Parameters:
-// - inputBoxes: a list of boxes.
-// - inputItems: a list of items.
-//
-// Returns:
-// - a Result struct that contains two slices:
-//   - Boxes: a list of boxes with items.
-//   - UnfitItems: a list of items that didn't fit into boxes.
-func (p *Packer) Pack(inputBoxes []*Box, inputItems []*Item) *Result {
-	res, _ := p.PackCtx(context.Background(), inputBoxes, inputItems)
+func (p *Packer) Rules() Rules {
+	return p.rules
+}
 
-	return res
+func (p *Packer) Finishers() []Finisher {
+	return compactFinishers(p.finishers)
+}
+
+func (p *Packer) Budget() Budget {
+	return p.budget
+}
+
+func (p *Packer) problem(boxes []*Box, items []*Item) *Problem {
+	return newProblem(compact(boxes), piecesOf(items), p.rules, p.finishers, p.budget, p.observer)
+}
+
+func (p *Packer) Pack(ctx context.Context, boxes []*Box, items []*Item) (*Result, error) {
+	started := time.Now()
+	problem := p.problem(boxes, items)
+
+	budgeted, done := p.budget.apply(ctx)
+	defer done()
+
+	packing, err := p.algorithm.Pack(budgeted, problem)
+	if err != nil {
+		return nil, err
+	}
+
+	packing, err = problem.finish(budgeted, packing)
+	if err != nil {
+		return nil, err
+	}
+
+	result := packing.result()
+	result.Report = problem.report(p.algorithm.Name(), started, result, packing)
+
+	return result, nil
 }

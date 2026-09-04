@@ -1,0 +1,2735 @@
+{
+  "name": "bookshop",
+  "boxes": [
+    {
+      "id": "kind-0",
+      "width": 220,
+      "height": 185,
+      "depth": 50,
+      "weight": 20000,
+      "quantity": 30
+    },
+    {
+      "id": "kind-1",
+      "width": 165,
+      "height": 215,
+      "depth": 100,
+      "weight": 20000,
+      "quantity": 30
+    },
+    {
+      "id": "kind-2",
+      "width": 265,
+      "height": 165,
+      "depth": 190,
+      "weight": 20000,
+      "quantity": 30
+    },
+    {
+      "id": "kind-3",
+      "width": 425,
+      "height": 165,
+      "depth": 190,
+      "weight": 20000,
+      "quantity": 30
+    },
+    {
+      "id": "kind-4",
+      "width": 425,
+      "height": 265,
+      "depth": 190,
+      "weight": 20000,
+      "quantity": 30
+    },
+    {
+      "id": "kind-5",
+      "width": 425,
+      "height": 265,
+      "depth": 380,
+      "weight": 20000,
+      "quantity": 30
+    },
+    {
+      "id": "kind-6",
+      "width": 530,
+      "height": 380,
+      "depth": 265,
+      "weight": 20000,
+      "quantity": 30
+    }
+  ],
+  "orders": [
+    {
+      "name": "basket-0",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 128,
+          "height": 243,
+          "depth": 39,
+          "weight": 662,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 178,
+          "height": 203,
+          "depth": 45,
+          "weight": 394,
+          "quantity": 4
+        },
+        {
+          "id": "book-2",
+          "width": 145,
+          "height": 248,
+          "depth": 20,
+          "weight": 470,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-1",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 133,
+          "height": 240,
+          "depth": 20,
+          "weight": 598,
+          "quantity": 12
+        },
+        {
+          "id": "book-1",
+          "width": 156,
+          "height": 183,
+          "depth": 26,
+          "weight": 210,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-2",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 192,
+          "height": 239,
+          "depth": 34,
+          "weight": 316,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-3",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 167,
+          "height": 207,
+          "depth": 28,
+          "weight": 652,
+          "quantity": 2
+        },
+        {
+          "id": "book-1",
+          "width": 174,
+          "height": 196,
+          "depth": 21,
+          "weight": 695,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-4",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 178,
+          "height": 230,
+          "depth": 24,
+          "weight": 237,
+          "quantity": 4
+        },
+        {
+          "id": "book-1",
+          "width": 151,
+          "height": 195,
+          "depth": 25,
+          "weight": 391,
+          "quantity": 10
+        },
+        {
+          "id": "book-2",
+          "width": 145,
+          "height": 189,
+          "depth": 26,
+          "weight": 690,
+          "quantity": 9
+        }
+      ]
+    },
+    {
+      "name": "basket-5",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 195,
+          "height": 184,
+          "depth": 40,
+          "weight": 553,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 130,
+          "height": 183,
+          "depth": 24,
+          "weight": 583,
+          "quantity": 4
+        },
+        {
+          "id": "book-2",
+          "width": 182,
+          "height": 225,
+          "depth": 46,
+          "weight": 565,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-6",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 169,
+          "height": 229,
+          "depth": 22,
+          "weight": 538,
+          "quantity": 6
+        }
+      ]
+    },
+    {
+      "name": "basket-7",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 165,
+          "height": 206,
+          "depth": 19,
+          "weight": 465,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 195,
+          "height": 243,
+          "depth": 38,
+          "weight": 385,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-8",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 171,
+          "height": 232,
+          "depth": 32,
+          "weight": 579,
+          "quantity": 8
+        },
+        {
+          "id": "book-1",
+          "width": 189,
+          "height": 230,
+          "depth": 35,
+          "weight": 299,
+          "quantity": 7
+        },
+        {
+          "id": "book-2",
+          "width": 147,
+          "height": 213,
+          "depth": 41,
+          "weight": 683,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-9",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 198,
+          "height": 249,
+          "depth": 17,
+          "weight": 507,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-10",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 152,
+          "height": 245,
+          "depth": 30,
+          "weight": 605,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-11",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 125,
+          "height": 210,
+          "depth": 18,
+          "weight": 496,
+          "quantity": 4
+        },
+        {
+          "id": "book-1",
+          "width": 120,
+          "height": 236,
+          "depth": 21,
+          "weight": 497,
+          "quantity": 6
+        },
+        {
+          "id": "book-2",
+          "width": 154,
+          "height": 221,
+          "depth": 46,
+          "weight": 292,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-12",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 121,
+          "height": 247,
+          "depth": 42,
+          "weight": 412,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-13",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 158,
+          "height": 219,
+          "depth": 28,
+          "weight": 370,
+          "quantity": 10
+        },
+        {
+          "id": "book-1",
+          "width": 170,
+          "height": 241,
+          "depth": 48,
+          "weight": 593,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-14",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 122,
+          "height": 228,
+          "depth": 37,
+          "weight": 277,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 164,
+          "height": 187,
+          "depth": 42,
+          "weight": 243,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-15",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 178,
+          "height": 243,
+          "depth": 32,
+          "weight": 259,
+          "quantity": 12
+        },
+        {
+          "id": "book-1",
+          "width": 158,
+          "height": 184,
+          "depth": 43,
+          "weight": 279,
+          "quantity": 11
+        },
+        {
+          "id": "book-2",
+          "width": 171,
+          "height": 227,
+          "depth": 33,
+          "weight": 459,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-16",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 193,
+          "height": 237,
+          "depth": 25,
+          "weight": 699,
+          "quantity": 2
+        },
+        {
+          "id": "book-1",
+          "width": 168,
+          "height": 218,
+          "depth": 16,
+          "weight": 673,
+          "quantity": 6
+        },
+        {
+          "id": "book-2",
+          "width": 182,
+          "height": 235,
+          "depth": 30,
+          "weight": 679,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-17",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 189,
+          "height": 217,
+          "depth": 44,
+          "weight": 664,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-18",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 163,
+          "height": 216,
+          "depth": 45,
+          "weight": 695,
+          "quantity": 8
+        }
+      ]
+    },
+    {
+      "name": "basket-19",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 126,
+          "height": 215,
+          "depth": 47,
+          "weight": 417,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 147,
+          "height": 185,
+          "depth": 32,
+          "weight": 573,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-20",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 198,
+          "height": 232,
+          "depth": 41,
+          "weight": 489,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 187,
+          "height": 189,
+          "depth": 30,
+          "weight": 519,
+          "quantity": 11
+        },
+        {
+          "id": "book-2",
+          "width": 121,
+          "height": 190,
+          "depth": 16,
+          "weight": 462,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-21",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 149,
+          "height": 190,
+          "depth": 45,
+          "weight": 566,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 133,
+          "height": 205,
+          "depth": 41,
+          "weight": 454,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-22",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 177,
+          "height": 227,
+          "depth": 29,
+          "weight": 430,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 175,
+          "height": 238,
+          "depth": 48,
+          "weight": 229,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-23",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 150,
+          "height": 213,
+          "depth": 32,
+          "weight": 218,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 151,
+          "height": 246,
+          "depth": 18,
+          "weight": 261,
+          "quantity": 2
+        },
+        {
+          "id": "book-2",
+          "width": 126,
+          "height": 222,
+          "depth": 49,
+          "weight": 660,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-24",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 130,
+          "height": 180,
+          "depth": 15,
+          "weight": 659,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 177,
+          "height": 239,
+          "depth": 43,
+          "weight": 498,
+          "quantity": 5
+        },
+        {
+          "id": "book-2",
+          "width": 121,
+          "height": 234,
+          "depth": 41,
+          "weight": 348,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-25",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 170,
+          "height": 232,
+          "depth": 20,
+          "weight": 251,
+          "quantity": 12
+        },
+        {
+          "id": "book-1",
+          "width": 171,
+          "height": 248,
+          "depth": 36,
+          "weight": 545,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-26",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 185,
+          "height": 243,
+          "depth": 39,
+          "weight": 313,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-27",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 197,
+          "height": 199,
+          "depth": 42,
+          "weight": 513,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-28",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 186,
+          "height": 209,
+          "depth": 26,
+          "weight": 554,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-29",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 182,
+          "height": 227,
+          "depth": 17,
+          "weight": 413,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 128,
+          "height": 224,
+          "depth": 45,
+          "weight": 457,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-30",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 126,
+          "height": 215,
+          "depth": 42,
+          "weight": 603,
+          "quantity": 2
+        },
+        {
+          "id": "book-1",
+          "width": 184,
+          "height": 220,
+          "depth": 24,
+          "weight": 617,
+          "quantity": 10
+        },
+        {
+          "id": "book-2",
+          "width": 193,
+          "height": 210,
+          "depth": 32,
+          "weight": 572,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-31",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 141,
+          "height": 186,
+          "depth": 36,
+          "weight": 483,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-32",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 185,
+          "height": 225,
+          "depth": 28,
+          "weight": 453,
+          "quantity": 8
+        },
+        {
+          "id": "book-1",
+          "width": 171,
+          "height": 226,
+          "depth": 17,
+          "weight": 290,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-33",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 191,
+          "height": 220,
+          "depth": 25,
+          "weight": 644,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 131,
+          "height": 244,
+          "depth": 22,
+          "weight": 513,
+          "quantity": 5
+        },
+        {
+          "id": "book-2",
+          "width": 158,
+          "height": 218,
+          "depth": 29,
+          "weight": 242,
+          "quantity": 9
+        }
+      ]
+    },
+    {
+      "name": "basket-34",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 122,
+          "height": 226,
+          "depth": 41,
+          "weight": 200,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 189,
+          "height": 237,
+          "depth": 17,
+          "weight": 594,
+          "quantity": 12
+        },
+        {
+          "id": "book-2",
+          "width": 129,
+          "height": 226,
+          "depth": 42,
+          "weight": 226,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-35",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 178,
+          "height": 219,
+          "depth": 34,
+          "weight": 514,
+          "quantity": 12
+        },
+        {
+          "id": "book-1",
+          "width": 183,
+          "height": 210,
+          "depth": 31,
+          "weight": 685,
+          "quantity": 6
+        },
+        {
+          "id": "book-2",
+          "width": 157,
+          "height": 181,
+          "depth": 31,
+          "weight": 495,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-36",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 145,
+          "height": 226,
+          "depth": 43,
+          "weight": 689,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 193,
+          "height": 224,
+          "depth": 48,
+          "weight": 332,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-37",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 157,
+          "height": 192,
+          "depth": 40,
+          "weight": 343,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-38",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 162,
+          "height": 185,
+          "depth": 39,
+          "weight": 535,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-39",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 172,
+          "height": 242,
+          "depth": 41,
+          "weight": 692,
+          "quantity": 8
+        },
+        {
+          "id": "book-1",
+          "width": 172,
+          "height": 201,
+          "depth": 42,
+          "weight": 306,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-40",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 198,
+          "height": 228,
+          "depth": 26,
+          "weight": 600,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 148,
+          "height": 187,
+          "depth": 19,
+          "weight": 273,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-41",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 133,
+          "height": 200,
+          "depth": 24,
+          "weight": 565,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-42",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 193,
+          "height": 216,
+          "depth": 34,
+          "weight": 404,
+          "quantity": 4
+        },
+        {
+          "id": "book-1",
+          "width": 184,
+          "height": 187,
+          "depth": 39,
+          "weight": 544,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-43",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 150,
+          "height": 211,
+          "depth": 34,
+          "weight": 594,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-44",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 128,
+          "height": 229,
+          "depth": 27,
+          "weight": 218,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 138,
+          "height": 219,
+          "depth": 35,
+          "weight": 614,
+          "quantity": 1
+        },
+        {
+          "id": "book-2",
+          "width": 134,
+          "height": 189,
+          "depth": 38,
+          "weight": 375,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-45",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 154,
+          "height": 223,
+          "depth": 47,
+          "weight": 487,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 164,
+          "height": 232,
+          "depth": 30,
+          "weight": 278,
+          "quantity": 12
+        },
+        {
+          "id": "book-2",
+          "width": 146,
+          "height": 239,
+          "depth": 16,
+          "weight": 225,
+          "quantity": 6
+        }
+      ]
+    },
+    {
+      "name": "basket-46",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 169,
+          "height": 248,
+          "depth": 31,
+          "weight": 452,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 141,
+          "height": 207,
+          "depth": 35,
+          "weight": 668,
+          "quantity": 4
+        },
+        {
+          "id": "book-2",
+          "width": 151,
+          "height": 191,
+          "depth": 15,
+          "weight": 277,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-47",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 149,
+          "height": 248,
+          "depth": 45,
+          "weight": 591,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-48",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 171,
+          "height": 233,
+          "depth": 37,
+          "weight": 364,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 127,
+          "height": 213,
+          "depth": 33,
+          "weight": 492,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-49",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 148,
+          "height": 185,
+          "depth": 25,
+          "weight": 304,
+          "quantity": 8
+        },
+        {
+          "id": "book-1",
+          "width": 137,
+          "height": 204,
+          "depth": 29,
+          "weight": 318,
+          "quantity": 12
+        },
+        {
+          "id": "book-2",
+          "width": 148,
+          "height": 190,
+          "depth": 48,
+          "weight": 591,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-50",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 190,
+          "height": 203,
+          "depth": 47,
+          "weight": 678,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 177,
+          "height": 235,
+          "depth": 48,
+          "weight": 462,
+          "quantity": 8
+        },
+        {
+          "id": "book-2",
+          "width": 199,
+          "height": 226,
+          "depth": 41,
+          "weight": 204,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-51",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 190,
+          "height": 232,
+          "depth": 35,
+          "weight": 554,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 123,
+          "height": 228,
+          "depth": 29,
+          "weight": 676,
+          "quantity": 4
+        },
+        {
+          "id": "book-2",
+          "width": 165,
+          "height": 222,
+          "depth": 17,
+          "weight": 624,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-52",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 153,
+          "height": 209,
+          "depth": 36,
+          "weight": 515,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 164,
+          "height": 248,
+          "depth": 32,
+          "weight": 624,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-53",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 158,
+          "height": 187,
+          "depth": 19,
+          "weight": 294,
+          "quantity": 9
+        },
+        {
+          "id": "book-1",
+          "width": 173,
+          "height": 218,
+          "depth": 16,
+          "weight": 472,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-54",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 152,
+          "height": 186,
+          "depth": 42,
+          "weight": 372,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 198,
+          "height": 201,
+          "depth": 21,
+          "weight": 538,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-55",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 146,
+          "height": 208,
+          "depth": 26,
+          "weight": 552,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 144,
+          "height": 189,
+          "depth": 17,
+          "weight": 606,
+          "quantity": 2
+        },
+        {
+          "id": "book-2",
+          "width": 187,
+          "height": 232,
+          "depth": 44,
+          "weight": 208,
+          "quantity": 8
+        }
+      ]
+    },
+    {
+      "name": "basket-56",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 162,
+          "height": 185,
+          "depth": 39,
+          "weight": 238,
+          "quantity": 12
+        },
+        {
+          "id": "book-1",
+          "width": 122,
+          "height": 215,
+          "depth": 45,
+          "weight": 276,
+          "quantity": 10
+        },
+        {
+          "id": "book-2",
+          "width": 166,
+          "height": 235,
+          "depth": 44,
+          "weight": 655,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-57",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 173,
+          "height": 234,
+          "depth": 21,
+          "weight": 602,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 130,
+          "height": 235,
+          "depth": 39,
+          "weight": 596,
+          "quantity": 4
+        },
+        {
+          "id": "book-2",
+          "width": 123,
+          "height": 227,
+          "depth": 42,
+          "weight": 330,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-58",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 131,
+          "height": 235,
+          "depth": 40,
+          "weight": 401,
+          "quantity": 10
+        },
+        {
+          "id": "book-1",
+          "width": 124,
+          "height": 246,
+          "depth": 27,
+          "weight": 268,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-59",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 157,
+          "height": 205,
+          "depth": 39,
+          "weight": 490,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 165,
+          "height": 199,
+          "depth": 41,
+          "weight": 244,
+          "quantity": 8
+        },
+        {
+          "id": "book-2",
+          "width": 171,
+          "height": 240,
+          "depth": 23,
+          "weight": 432,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-60",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 198,
+          "height": 191,
+          "depth": 30,
+          "weight": 554,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 157,
+          "height": 202,
+          "depth": 25,
+          "weight": 464,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-61",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 149,
+          "height": 190,
+          "depth": 38,
+          "weight": 528,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 135,
+          "height": 243,
+          "depth": 34,
+          "weight": 612,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-62",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 145,
+          "height": 211,
+          "depth": 15,
+          "weight": 564,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 146,
+          "height": 247,
+          "depth": 19,
+          "weight": 309,
+          "quantity": 2
+        },
+        {
+          "id": "book-2",
+          "width": 184,
+          "height": 239,
+          "depth": 39,
+          "weight": 266,
+          "quantity": 9
+        }
+      ]
+    },
+    {
+      "name": "basket-63",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 167,
+          "height": 223,
+          "depth": 18,
+          "weight": 497,
+          "quantity": 12
+        },
+        {
+          "id": "book-1",
+          "width": 153,
+          "height": 181,
+          "depth": 30,
+          "weight": 481,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-64",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 145,
+          "height": 200,
+          "depth": 36,
+          "weight": 281,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-65",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 186,
+          "height": 224,
+          "depth": 31,
+          "weight": 674,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 125,
+          "height": 222,
+          "depth": 35,
+          "weight": 679,
+          "quantity": 3
+        },
+        {
+          "id": "book-2",
+          "width": 158,
+          "height": 207,
+          "depth": 25,
+          "weight": 317,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-66",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 170,
+          "height": 219,
+          "depth": 37,
+          "weight": 529,
+          "quantity": 4
+        },
+        {
+          "id": "book-1",
+          "width": 182,
+          "height": 231,
+          "depth": 24,
+          "weight": 376,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-67",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 181,
+          "height": 238,
+          "depth": 36,
+          "weight": 383,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 143,
+          "height": 181,
+          "depth": 42,
+          "weight": 328,
+          "quantity": 3
+        },
+        {
+          "id": "book-2",
+          "width": 192,
+          "height": 184,
+          "depth": 15,
+          "weight": 597,
+          "quantity": 9
+        }
+      ]
+    },
+    {
+      "name": "basket-68",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 138,
+          "height": 226,
+          "depth": 34,
+          "weight": 460,
+          "quantity": 10
+        },
+        {
+          "id": "book-1",
+          "width": 184,
+          "height": 216,
+          "depth": 32,
+          "weight": 281,
+          "quantity": 2
+        },
+        {
+          "id": "book-2",
+          "width": 156,
+          "height": 240,
+          "depth": 41,
+          "weight": 535,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-69",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 148,
+          "height": 231,
+          "depth": 42,
+          "weight": 495,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 194,
+          "height": 199,
+          "depth": 48,
+          "weight": 324,
+          "quantity": 9
+        },
+        {
+          "id": "book-2",
+          "width": 176,
+          "height": 218,
+          "depth": 25,
+          "weight": 591,
+          "quantity": 8
+        }
+      ]
+    },
+    {
+      "name": "basket-70",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 142,
+          "height": 194,
+          "depth": 46,
+          "weight": 605,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "basket-71",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 157,
+          "height": 242,
+          "depth": 17,
+          "weight": 204,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-72",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 121,
+          "height": 227,
+          "depth": 35,
+          "weight": 505,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 142,
+          "height": 206,
+          "depth": 32,
+          "weight": 664,
+          "quantity": 11
+        },
+        {
+          "id": "book-2",
+          "width": 172,
+          "height": 200,
+          "depth": 31,
+          "weight": 251,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-73",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 143,
+          "height": 239,
+          "depth": 49,
+          "weight": 593,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 150,
+          "height": 196,
+          "depth": 46,
+          "weight": 361,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-74",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 137,
+          "height": 180,
+          "depth": 31,
+          "weight": 375,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 143,
+          "height": 246,
+          "depth": 19,
+          "weight": 429,
+          "quantity": 2
+        },
+        {
+          "id": "book-2",
+          "width": 190,
+          "height": 206,
+          "depth": 46,
+          "weight": 570,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-75",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 178,
+          "height": 227,
+          "depth": 32,
+          "weight": 242,
+          "quantity": 8
+        },
+        {
+          "id": "book-1",
+          "width": 170,
+          "height": 249,
+          "depth": 29,
+          "weight": 399,
+          "quantity": 5
+        },
+        {
+          "id": "book-2",
+          "width": 193,
+          "height": 199,
+          "depth": 31,
+          "weight": 299,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-76",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 194,
+          "height": 219,
+          "depth": 38,
+          "weight": 324,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 179,
+          "height": 183,
+          "depth": 38,
+          "weight": 527,
+          "quantity": 1
+        },
+        {
+          "id": "book-2",
+          "width": 174,
+          "height": 233,
+          "depth": 35,
+          "weight": 379,
+          "quantity": 9
+        }
+      ]
+    },
+    {
+      "name": "basket-77",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 189,
+          "height": 244,
+          "depth": 18,
+          "weight": 320,
+          "quantity": 2
+        },
+        {
+          "id": "book-1",
+          "width": 123,
+          "height": 200,
+          "depth": 25,
+          "weight": 571,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-78",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 178,
+          "height": 192,
+          "depth": 39,
+          "weight": 621,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 134,
+          "height": 206,
+          "depth": 21,
+          "weight": 665,
+          "quantity": 9
+        }
+      ]
+    },
+    {
+      "name": "basket-79",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 141,
+          "height": 219,
+          "depth": 32,
+          "weight": 505,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 127,
+          "height": 242,
+          "depth": 38,
+          "weight": 481,
+          "quantity": 6
+        },
+        {
+          "id": "book-2",
+          "width": 161,
+          "height": 238,
+          "depth": 40,
+          "weight": 396,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-80",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 166,
+          "height": 208,
+          "depth": 24,
+          "weight": 509,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 199,
+          "height": 203,
+          "depth": 20,
+          "weight": 575,
+          "quantity": 2
+        },
+        {
+          "id": "book-2",
+          "width": 133,
+          "height": 234,
+          "depth": 21,
+          "weight": 631,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-81",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 182,
+          "height": 232,
+          "depth": 44,
+          "weight": 319,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 193,
+          "height": 243,
+          "depth": 46,
+          "weight": 399,
+          "quantity": 1
+        },
+        {
+          "id": "book-2",
+          "width": 145,
+          "height": 228,
+          "depth": 38,
+          "weight": 226,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-82",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 127,
+          "height": 199,
+          "depth": 26,
+          "weight": 606,
+          "quantity": 8
+        },
+        {
+          "id": "book-1",
+          "width": 139,
+          "height": 219,
+          "depth": 34,
+          "weight": 623,
+          "quantity": 9
+        },
+        {
+          "id": "book-2",
+          "width": 181,
+          "height": 189,
+          "depth": 18,
+          "weight": 290,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "basket-83",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 135,
+          "height": 237,
+          "depth": 46,
+          "weight": 660,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 162,
+          "height": 208,
+          "depth": 34,
+          "weight": 501,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-84",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 128,
+          "height": 186,
+          "depth": 16,
+          "weight": 647,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 124,
+          "height": 243,
+          "depth": 40,
+          "weight": 305,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-85",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 122,
+          "height": 205,
+          "depth": 16,
+          "weight": 345,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 182,
+          "height": 182,
+          "depth": 41,
+          "weight": 503,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-86",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 154,
+          "height": 225,
+          "depth": 20,
+          "weight": 244,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-87",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 179,
+          "height": 232,
+          "depth": 42,
+          "weight": 606,
+          "quantity": 2
+        },
+        {
+          "id": "book-1",
+          "width": 152,
+          "height": 230,
+          "depth": 43,
+          "weight": 651,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-88",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 154,
+          "height": 214,
+          "depth": 25,
+          "weight": 281,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 178,
+          "height": 210,
+          "depth": 46,
+          "weight": 428,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-89",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 133,
+          "height": 237,
+          "depth": 48,
+          "weight": 407,
+          "quantity": 4
+        },
+        {
+          "id": "book-1",
+          "width": 188,
+          "height": 223,
+          "depth": 38,
+          "weight": 533,
+          "quantity": 9
+        },
+        {
+          "id": "book-2",
+          "width": 196,
+          "height": 196,
+          "depth": 28,
+          "weight": 542,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-90",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 174,
+          "height": 182,
+          "depth": 45,
+          "weight": 523,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 147,
+          "height": 236,
+          "depth": 43,
+          "weight": 676,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-91",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 174,
+          "height": 180,
+          "depth": 19,
+          "weight": 363,
+          "quantity": 2
+        },
+        {
+          "id": "book-1",
+          "width": 141,
+          "height": 231,
+          "depth": 33,
+          "weight": 631,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-92",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 199,
+          "height": 181,
+          "depth": 43,
+          "weight": 332,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-93",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 159,
+          "height": 242,
+          "depth": 48,
+          "weight": 372,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 143,
+          "height": 202,
+          "depth": 43,
+          "weight": 508,
+          "quantity": 4
+        },
+        {
+          "id": "book-2",
+          "width": 149,
+          "height": 236,
+          "depth": 28,
+          "weight": 366,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-94",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 184,
+          "height": 218,
+          "depth": 40,
+          "weight": 529,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 137,
+          "height": 248,
+          "depth": 27,
+          "weight": 611,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-95",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 146,
+          "height": 193,
+          "depth": 27,
+          "weight": 505,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 131,
+          "height": 209,
+          "depth": 32,
+          "weight": 256,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-96",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 146,
+          "height": 198,
+          "depth": 39,
+          "weight": 207,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-97",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 171,
+          "height": 200,
+          "depth": 17,
+          "weight": 455,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 149,
+          "height": 205,
+          "depth": 30,
+          "weight": 272,
+          "quantity": 8
+        }
+      ]
+    },
+    {
+      "name": "basket-98",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 179,
+          "height": 203,
+          "depth": 18,
+          "weight": 212,
+          "quantity": 6
+        }
+      ]
+    },
+    {
+      "name": "basket-99",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 173,
+          "height": 203,
+          "depth": 31,
+          "weight": 308,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 136,
+          "height": 202,
+          "depth": 20,
+          "weight": 496,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-100",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 166,
+          "height": 187,
+          "depth": 31,
+          "weight": 533,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 128,
+          "height": 188,
+          "depth": 26,
+          "weight": 502,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-101",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 166,
+          "height": 233,
+          "depth": 49,
+          "weight": 536,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 170,
+          "height": 196,
+          "depth": 15,
+          "weight": 212,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-102",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 175,
+          "height": 181,
+          "depth": 25,
+          "weight": 553,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 180,
+          "height": 249,
+          "depth": 35,
+          "weight": 300,
+          "quantity": 12
+        }
+      ]
+    },
+    {
+      "name": "basket-103",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 150,
+          "height": 216,
+          "depth": 32,
+          "weight": 503,
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "name": "basket-104",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 160,
+          "height": 246,
+          "depth": 40,
+          "weight": 390,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-105",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 170,
+          "height": 212,
+          "depth": 29,
+          "weight": 200,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 127,
+          "height": 239,
+          "depth": 47,
+          "weight": 590,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-106",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 186,
+          "height": 201,
+          "depth": 49,
+          "weight": 395,
+          "quantity": 11
+        },
+        {
+          "id": "book-1",
+          "width": 169,
+          "height": 208,
+          "depth": 25,
+          "weight": 358,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-107",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 196,
+          "height": 210,
+          "depth": 40,
+          "weight": 672,
+          "quantity": 9
+        },
+        {
+          "id": "book-1",
+          "width": 145,
+          "height": 208,
+          "depth": 19,
+          "weight": 308,
+          "quantity": 7
+        },
+        {
+          "id": "book-2",
+          "width": 176,
+          "height": 207,
+          "depth": 46,
+          "weight": 381,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-108",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 133,
+          "height": 182,
+          "depth": 23,
+          "weight": 481,
+          "quantity": 10
+        },
+        {
+          "id": "book-1",
+          "width": 187,
+          "height": 185,
+          "depth": 47,
+          "weight": 636,
+          "quantity": 6
+        }
+      ]
+    },
+    {
+      "name": "basket-109",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 165,
+          "height": 210,
+          "depth": 37,
+          "weight": 554,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-110",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 142,
+          "height": 221,
+          "depth": 17,
+          "weight": 550,
+          "quantity": 12
+        },
+        {
+          "id": "book-1",
+          "width": 157,
+          "height": 229,
+          "depth": 23,
+          "weight": 646,
+          "quantity": 7
+        },
+        {
+          "id": "book-2",
+          "width": 123,
+          "height": 244,
+          "depth": 21,
+          "weight": 658,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "name": "basket-111",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 126,
+          "height": 212,
+          "depth": 49,
+          "weight": 219,
+          "quantity": 1
+        },
+        {
+          "id": "book-1",
+          "width": 151,
+          "height": 211,
+          "depth": 36,
+          "weight": 202,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-112",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 184,
+          "height": 231,
+          "depth": 46,
+          "weight": 575,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 193,
+          "height": 220,
+          "depth": 32,
+          "weight": 456,
+          "quantity": 10
+        },
+        {
+          "id": "book-2",
+          "width": 172,
+          "height": 206,
+          "depth": 35,
+          "weight": 564,
+          "quantity": 8
+        }
+      ]
+    },
+    {
+      "name": "basket-113",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 121,
+          "height": 207,
+          "depth": 48,
+          "weight": 310,
+          "quantity": 4
+        },
+        {
+          "id": "book-1",
+          "width": 184,
+          "height": 238,
+          "depth": 37,
+          "weight": 488,
+          "quantity": 6
+        },
+        {
+          "id": "book-2",
+          "width": 176,
+          "height": 201,
+          "depth": 17,
+          "weight": 241,
+          "quantity": 11
+        }
+      ]
+    },
+    {
+      "name": "basket-114",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 185,
+          "height": 243,
+          "depth": 41,
+          "weight": 513,
+          "quantity": 9
+        },
+        {
+          "id": "book-1",
+          "width": 178,
+          "height": 239,
+          "depth": 30,
+          "weight": 275,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-115",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 146,
+          "height": 203,
+          "depth": 42,
+          "weight": 400,
+          "quantity": 6
+        },
+        {
+          "id": "book-1",
+          "width": 172,
+          "height": 194,
+          "depth": 20,
+          "weight": 346,
+          "quantity": 1
+        },
+        {
+          "id": "book-2",
+          "width": 161,
+          "height": 228,
+          "depth": 29,
+          "weight": 473,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "name": "basket-116",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 130,
+          "height": 202,
+          "depth": 28,
+          "weight": 357,
+          "quantity": 3
+        },
+        {
+          "id": "book-1",
+          "width": 166,
+          "height": 193,
+          "depth": 29,
+          "weight": 478,
+          "quantity": 7
+        }
+      ]
+    },
+    {
+      "name": "basket-117",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 172,
+          "height": 180,
+          "depth": 22,
+          "weight": 369,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 158,
+          "height": 217,
+          "depth": 31,
+          "weight": 503,
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "basket-118",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 189,
+          "height": 235,
+          "depth": 48,
+          "weight": 647,
+          "quantity": 5
+        },
+        {
+          "id": "book-1",
+          "width": 120,
+          "height": 235,
+          "depth": 24,
+          "weight": 280,
+          "quantity": 6
+        }
+      ]
+    },
+    {
+      "name": "basket-119",
+      "items": [
+        {
+          "id": "book-0",
+          "width": 188,
+          "height": 244,
+          "depth": 44,
+          "weight": 518,
+          "quantity": 7
+        },
+        {
+          "id": "book-1",
+          "width": 161,
+          "height": 196,
+          "depth": 17,
+          "weight": 567,
+          "quantity": 3
+        },
+        {
+          "id": "book-2",
+          "width": 148,
+          "height": 192,
+          "depth": 19,
+          "weight": 480,
+          "quantity": 4
+        }
+      ]
+    }
+  ]
+}
