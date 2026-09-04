@@ -1,14 +1,16 @@
 version: "2"
 run:
-  go: "1.22"
+  go: "1.25"
 linters:
   default: all
   disable:
     - funcorder
-    - exhaustruct
+    - exhaustruct # deprecated
+    - exhaustruct_v5
     - varnamelen
     - wrapcheck
-    - wsl
+    - wsl # deprecated
+    - gomodguard # deprecated
   enable:
     - wsl_v5
   settings:
