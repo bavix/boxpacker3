@@ -1,5 +1,24 @@
 # Changelog
 
+## v2.0.0 - 2026-09-04
+
+### What's Changed
+
+* add bench by [@rez1dent3](https://github.com/rez1dent3) in https://github.com/bavix/boxpacker3/pull/41
+* Bump bavix/.github/.github/workflows/changelog.yml from 0.4.1 to 0.5.0 by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/42
+* Add Packrift ecommerce carton fixture by [@Packrift](https://github.com/Packrift) in https://github.com/bavix/boxpacker3/pull/43
+* ci(deps): bump actions/checkout from 6 to 7 in the actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/44
+* ci(deps): bump actions/setup-go from 6 to 7 in the actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/45
+* chore(go-deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.0 in the npm group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/46
+* chore(go-deps): bump github.com/stretchr/testify from 1.12.0 to 1.12.1 in the npm group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/bavix/boxpacker3/pull/47
+* new version v2 by [@rez1dent3](https://github.com/rez1dent3) in https://github.com/bavix/boxpacker3/pull/48
+
+### New Contributors
+
+* [@Packrift](https://github.com/Packrift) made their first contribution in https://github.com/bavix/boxpacker3/pull/43
+
+**Full Changelog**: https://github.com/bavix/boxpacker3/compare/v1.3.2...v2.0.0
+
 ## v1.3.2 - 2025-12-05
 
 ### What's Changed
